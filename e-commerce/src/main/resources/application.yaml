@@ -1,0 +1,21 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-stacktrace: always
+
+spring:
+  datasource:
+    url: ${DBMS_CONNECTION}
+    driverClassName: "com.mysql.cj.jdbc.Driver"
+    username: ${DBMS_USERNAME}
+    password: ${DBMS_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+jwt:
+  signerKey: "8591f80b80ac9777c53927e02c6cd5e98f4ed5782999c1ea40cbc2bb684806f1"
+  valid-duration: 3600
+  refreshable-duration: 36000
