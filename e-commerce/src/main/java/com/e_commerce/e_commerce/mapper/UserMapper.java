@@ -13,9 +13,7 @@ public interface UserMapper {
 
     UserResponse toUserResponse(User user);
 
-    @Mapping(target = "username", ignore = true)
     @Mapping(target = "password", ignore = true)
-    @Mapping(target = "email", ignore = true)
     @Mapping(target = "roles", ignore = true)
     // ignore null
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

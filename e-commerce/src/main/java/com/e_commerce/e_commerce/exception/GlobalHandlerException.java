@@ -6,6 +6,9 @@ import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,6 +31,8 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(value = AccessDeniedException.class)
     ResponseEntity<ApiResponse> handleAccessDeniedException(AccessDeniedException accessDeniedException) {
+        log.info("in GlobalHandlerException - handleAccessDeniedException");
+        log.info("Exception type: {}, message: {}", accessDeniedException.getClass().getSimpleName(), accessDeniedException.getMessage());
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
         return ResponseEntity.status(errorCode.getStatusCode()).body(ApiResponse.<Void>builder()
                 .code(errorCode.getCode())
@@ -38,6 +43,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse<Void>> handleException(Exception exception) {
+        log.info("in GlobalHandlerException - handleException");
         log.info("Exception type: {}, message: {}", exception.getClass().getSimpleName(), exception.getMessage());
         ErrorCode errorCode = ErrorCode.UNCATEGORIZED_EXCEPTION;
         return ResponseEntity.status(errorCode.getStatusCode()).body(ApiResponse.<Void>builder()

@@ -2,15 +2,12 @@ package com.e_commerce.e_commerce.configuration;
 
 import com.e_commerce.e_commerce.dto.request.IntrospectRequest;
 import com.e_commerce.e_commerce.dto.response.IntrospectResponse;
-import com.e_commerce.e_commerce.enums.ErrorCode;
-import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.service.AuthenticationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;

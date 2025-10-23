@@ -15,8 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +43,7 @@ public class UserService {
         // catch unique constraint violation
         try {
             user = userRepository.save(user);
-        } catch (DataIntegrityViolationException exception) {
+        } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
         }
         return userMapper.toUserResponse(user);
@@ -54,38 +54,30 @@ public class UserService {
         return userRepository.findAll().stream().map((user) -> userMapper.toUserResponse(user)).toList();
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.userId")
+    @PostAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
     public UserResponse getUser(String userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return userMapper.toUserResponse(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.userId")
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
     public UserResponse updateUser(String userId, UserUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         userMapper.updateUser(user, userUpdateRequest);
         // if it is null, this is an optional update
-        String username = userUpdateRequest.getUsername();
-        if (username != null) {
-            user.setUsername(username);
-        }
         String password = userUpdateRequest.getPassword();
         if (password != null) {
             user.setPassword(passwordEncoder.encode(password));
         }
-        String email = userUpdateRequest.getEmail();
-        if (email != null) {
-            user.setEmail(email);
-        }
         try {
             user = userRepository.save(user);
-        } catch (DataIntegrityViolationException exception) {
+        } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
         }
         return userMapper.toUserResponse(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.userId")
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
     public void deleteUser(String userId) {
         userRepository.deleteById(userId);
     }

@@ -1,5 +1,6 @@
 package com.e_commerce.e_commerce.service;
 
+import com.e_commerce.e_commerce.configuration.CustomUserDetails;
 import com.e_commerce.e_commerce.dto.request.IntrospectRequest;
 import com.e_commerce.e_commerce.dto.request.LoginRequest;
 import com.e_commerce.e_commerce.dto.request.LogoutRequest;
@@ -24,8 +25,11 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -43,6 +47,7 @@ import java.util.UUID;
 public class AuthenticationService {
     UserRepository userRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    AuthenticationManager authenticationManager;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -54,16 +59,31 @@ public class AuthenticationService {
     @Value("${jwt.refreshable-duration}")
     long refreshableDuration;
 
+//    public LoginResponse login(LoginRequest loginRequest) {
+//        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+//        // avoid circular reference
+//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+//        boolean isAuthenticated = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
+//        if (!isAuthenticated) {
+//            throw new AppException(ErrorCode.UNAUTHENTICATED);
+//        }
+//        return LoginResponse.builder()
+//                .token(generateToken(user))
+//                .build();
+//    }
+
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
-        // avoid circular reference
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        boolean isAuthenticated = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
-        if (!isAuthenticated) {
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+        Authentication authentication = null;
+        try {
+            authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        } catch (BadCredentialsException e) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        log.info("customUserDetails in login method: {}", customUserDetails);
         return LoginResponse.builder()
-                .token(generateToken(user))
+                .token(generateToken(customUserDetails.getUser()))
                 .build();
     }
 
@@ -76,6 +96,7 @@ public class AuthenticationService {
                 .issueTime(new Date())
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
+                .claim("userId", user.getId())
                 .expirationTime(new Date(Instant.now().plus(validDuration, ChronoUnit.SECONDS).toEpochMilli()))
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
