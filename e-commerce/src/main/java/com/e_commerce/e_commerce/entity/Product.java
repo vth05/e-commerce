@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
+
 @Entity
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -16,11 +18,11 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
     String name;
-    double price;
-    long quantity;
     // save enum as string in database
     @Enumerated(EnumType.STRING)
     Category category;
+    BigDecimal price;
+    long quantity;
     String description;
     boolean active;
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,7 +21,7 @@ public class Cart {
     String userId;
     @Enumerated(EnumType.STRING)
     CartStatus cartStatus;
-    double totalPrice;
+    BigDecimal totalPrice;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }
