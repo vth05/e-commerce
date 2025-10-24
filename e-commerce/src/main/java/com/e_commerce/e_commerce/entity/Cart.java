@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Data
@@ -24,4 +25,6 @@ public class Cart {
     BigDecimal totalPrice;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    @OneToMany(mappedBy = "cart")
+    Set<CartItem> cartItems;
 }

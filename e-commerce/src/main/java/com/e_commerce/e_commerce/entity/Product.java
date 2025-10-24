@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Entity
 @Data
@@ -25,4 +26,6 @@ public class Product {
     long quantity;
     String description;
     boolean active;
+    @OneToMany(mappedBy = "product")
+    Set<CartItem> cartItems;
 }
