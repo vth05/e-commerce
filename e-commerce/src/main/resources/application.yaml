@@ -14,6 +14,10 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 jwt:
   signerKey: "8591f80b80ac9777c53927e02c6cd5e98f4ed5782999c1ea40cbc2bb684806f1"

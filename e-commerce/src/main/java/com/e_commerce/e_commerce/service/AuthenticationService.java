@@ -8,10 +8,12 @@ import com.e_commerce.e_commerce.dto.request.RefreshTokenRequest;
 import com.e_commerce.e_commerce.dto.response.IntrospectResponse;
 import com.e_commerce.e_commerce.dto.response.LoginResponse;
 import com.e_commerce.e_commerce.entity.InvalidatedToken;
+import com.e_commerce.e_commerce.entity.RedisToken;
 import com.e_commerce.e_commerce.entity.User;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.repository.InvalidatedTokenRepository;
+import com.e_commerce.e_commerce.repository.RedisTokenRepository;
 import com.e_commerce.e_commerce.repository.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -33,6 +35,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -46,7 +49,7 @@ import java.util.UUID;
 @Slf4j
 public class AuthenticationService {
     UserRepository userRepository;
-    InvalidatedTokenRepository invalidatedTokenRepository;
+    RedisTokenRepository redisTokenRepository;
     AuthenticationManager authenticationManager;
 
     @NonFinal
@@ -58,19 +61,6 @@ public class AuthenticationService {
     @NonFinal
     @Value("${jwt.refreshable-duration}")
     long refreshableDuration;
-
-//    public LoginResponse login(LoginRequest loginRequest) {
-//        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
-//        // avoid circular reference
-//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-//        boolean isAuthenticated = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
-//        if (!isAuthenticated) {
-//            throw new AppException(ErrorCode.UNAUTHENTICATED);
-//        }
-//        return LoginResponse.builder()
-//                .token(generateToken(user))
-//                .build();
-//    }
 
     public LoginResponse login(LoginRequest loginRequest) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
@@ -154,7 +144,7 @@ public class AuthenticationService {
         if (!isVerified || expirationTime.before(new Date())) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        if (invalidatedTokenRepository.existsById(jwtClaimsSet.getJWTID())) {
+        if (redisTokenRepository.existsById(jwtClaimsSet.getJWTID())) {
             log.info("Token has been invalidated (verifyToken method): {}", token);
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
@@ -166,13 +156,12 @@ public class AuthenticationService {
             String token = logoutRequest.getToken();
             SignedJWT signedJWT = verifyToken(token, true);
             JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-            invalidatedTokenRepository.save(InvalidatedToken.builder()
-                    .id(jwtClaimsSet.getJWTID())
-                    .expirationTime(jwtClaimsSet.getExpirationTime().toInstant().atZone(ZoneId.of("UTC+7")).toLocalDateTime())
+            redisTokenRepository.save(RedisToken.builder()
+                    .jwtId(jwtClaimsSet.getJWTID())
+                    .ttl(Duration.between(Instant.now(), jwtClaimsSet.getIssueTime().toInstant().plus(refreshableDuration, ChronoUnit.SECONDS)).getSeconds())
                     .build());
-        } catch (ParseException | JOSEException e) {
-            log.info("ParseException or JOSEException when logout (logout method): {}", e.getMessage());
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        } catch (ParseException | JOSEException | AppException e) {
+            log.info("Token invalid or expired during logout: {}", e.getMessage());
         }
     }
 
@@ -180,9 +169,9 @@ public class AuthenticationService {
         try {
             SignedJWT signedJWT = verifyToken(refreshTokenRequest.getToken(), true);
             JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-            invalidatedTokenRepository.save(InvalidatedToken.builder()
-                    .id(jwtClaimsSet.getJWTID())
-                    .expirationTime(jwtClaimsSet.getExpirationTime().toInstant().atZone(ZoneId.of("UTC+7")).toLocalDateTime())
+            redisTokenRepository.save(RedisToken.builder()
+                    .jwtId(jwtClaimsSet.getJWTID())
+                    .ttl(Duration.between(Instant.now(), jwtClaimsSet.getIssueTime().toInstant().plus(refreshableDuration, ChronoUnit.SECONDS)).getSeconds())
                     .build());
             String username = jwtClaimsSet.getSubject();
             User user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
