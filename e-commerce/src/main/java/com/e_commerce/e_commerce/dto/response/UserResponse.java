@@ -20,6 +20,8 @@ public class UserResponse {
     String address;
     String email;
     LocalDate dob;
+    String gender;
+    int tokenVersion;
     boolean active;
     Set<RoleResponse> roles;
 }

@@ -25,7 +25,7 @@ public class UserUpdateRequest {
     @Email(message = "EMAIL_INVALID", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
     String email;
     LocalDate dob;
-    Set<String> roles;
+    String gender;
 
     public void setUsername(String username) {
         this.username = username == null ? null : username.trim();

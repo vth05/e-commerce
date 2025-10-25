@@ -6,6 +6,7 @@ import com.e_commerce.e_commerce.entity.User;
 import com.e_commerce.e_commerce.dto.request.UserCreationRequest;
 import com.e_commerce.e_commerce.dto.response.UserResponse;
 import com.e_commerce.e_commerce.enums.ErrorCode;
+import com.e_commerce.e_commerce.enums.Gender;
 import com.e_commerce.e_commerce.mapper.UserMapper;
 import com.e_commerce.e_commerce.repository.RoleRepository;
 import com.e_commerce.e_commerce.repository.UserRepository;
@@ -15,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,11 +35,12 @@ public class UserService {
     PasswordEncoder passwordEncoder;
 
     public UserResponse createUser(UserCreationRequest userCreationRequest) {
-        User user = userMapper.createUser(userCreationRequest);
+        User user = userMapper.toUser(userCreationRequest);
         user.setPassword(passwordEncoder.encode(userCreationRequest.getPassword()));
         Set<Role> roles = new HashSet<>();
         roleRepository.findById("USER").ifPresent(role -> roles.add(role));
         user.setRoles(roles);
+        user.setGender(Gender.valueOf(userCreationRequest.getGender().toUpperCase()));
         // catch unique constraint violation
         try {
             user = userRepository.save(user);
@@ -54,7 +55,7 @@ public class UserService {
         return userRepository.findAll().stream().map((user) -> userMapper.toUserResponse(user)).toList();
     }
 
-    @PostAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
     public UserResponse getUser(String userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return userMapper.toUserResponse(user);
@@ -67,7 +68,11 @@ public class UserService {
         // if it is null, this is an optional update
         String password = userUpdateRequest.getPassword();
         if (password != null) {
+            user.setTokenVersion(user.getTokenVersion() + 1);
             user.setPassword(passwordEncoder.encode(password));
+        }
+        if (userUpdateRequest.getGender() != null) {
+            user.setGender(Gender.valueOf(userUpdateRequest.getGender().toUpperCase()));
         }
         try {
             user = userRepository.save(user);

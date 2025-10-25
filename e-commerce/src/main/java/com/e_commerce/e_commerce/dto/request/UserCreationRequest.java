@@ -32,6 +32,7 @@ public class UserCreationRequest {
     @Email(message = "EMAIL_INVALID", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
     String email;
     LocalDate dob;
+    String gender;
 
     // spring uses setters to map request body to this dto
     public void setUsername(String username) {

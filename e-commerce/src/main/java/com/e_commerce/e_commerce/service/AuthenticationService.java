@@ -87,6 +87,7 @@ public class AuthenticationService {
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .claim("userId", user.getId())
+                .claim("tokenVersion", user.getTokenVersion())
                 .expirationTime(new Date(Instant.now().plus(validDuration, ChronoUnit.SECONDS).toEpochMilli()))
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -146,6 +147,10 @@ public class AuthenticationService {
         }
         if (redisTokenRepository.existsById(jwtClaimsSet.getJWTID())) {
             log.info("Token has been invalidated (verifyToken method): {}", token);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        User user = userRepository.findByUsername(jwtClaimsSet.getSubject()).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        if (user.getTokenVersion() != ((Number) jwtClaimsSet.getClaim("tokenVersion")).intValue()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         return signedJWT;
