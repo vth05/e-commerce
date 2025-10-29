@@ -28,7 +28,18 @@ public enum ErrorCode {
     TOKEN_REQUIRED(1011, "Token is required", HttpStatus.BAD_REQUEST),
     ROLE_NAME_REQUIRED(1012, "Role name is required", HttpStatus.BAD_REQUEST),
     PERMISSION_NAME_REQUIRED(1013, "Permission name is required", HttpStatus.BAD_REQUEST),
-    UNAUTHORIZED(1014, "Unauthorized", HttpStatus.FORBIDDEN)
+    UNAUTHORIZED(1014, "Unauthorized", HttpStatus.FORBIDDEN),
+    PRODUCT_NOT_EXISTED(1015, "This product does not already exist", HttpStatus.NOT_FOUND),
+    PRODUCT_NAME_REQUIRED(1016, "Product name is required", HttpStatus.BAD_REQUEST),
+    PRODUCT_CATEGORY_REQUIRED(1017, "Product category is required", HttpStatus.BAD_REQUEST),
+    PRODUCT_PRICE_REQUIRED(1018, "Product price is required", HttpStatus.BAD_REQUEST),
+    PRODUCT_PRICE_INVALID(1019, "Product price must be at least 1", HttpStatus.BAD_REQUEST),
+    PRODUCT_INSUFFICIENT_STOCK(1020, "Product stock is insufficient", HttpStatus.BAD_REQUEST),
+    PRODUCT_ID_REQUIRED(1021, "Product ID is required", HttpStatus.BAD_REQUEST),
+    PRODUCT_QUANTITY_INVALID(1022, "Product quantity must be at least 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_QUANTITY_REQUIRED(1023, "Product quantity is required", HttpStatus.BAD_REQUEST),
+    PRODUCT_NAME_INVALID(1024, "Product name at least {min} characters", HttpStatus.BAD_REQUEST),
+    PRODUCT_CATEGORY_INVALID(1025, "Product category at least {min} characters", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

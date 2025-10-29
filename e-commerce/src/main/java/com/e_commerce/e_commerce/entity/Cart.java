@@ -4,6 +4,9 @@ import com.e_commerce.e_commerce.enums.CartStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,6 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,7 +27,11 @@ public class Cart {
     @Enumerated(EnumType.STRING)
     CartStatus cartStatus;
     BigDecimal totalPrice;
+    @CreatedDate
+    @Column(updatable = false)
     LocalDateTime createdAt;
+    @LastModifiedDate
+    @Column(insertable = false)
     LocalDateTime updatedAt;
     @OneToMany(mappedBy = "cart")
     Set<CartItem> cartItems;

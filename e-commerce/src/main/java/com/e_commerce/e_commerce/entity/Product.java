@@ -25,7 +25,8 @@ public class Product {
     BigDecimal price;
     long quantity;
     String description;
-    boolean active;
+    @Builder.Default
+    boolean active = true;
     @OneToMany(mappedBy = "product")
     Set<CartItem> cartItems;
 }
