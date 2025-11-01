@@ -4,31 +4,18 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
-
 @Entity
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class CartItem {
+public class ProductImage {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @EqualsAndHashCode.Include
     String id;
 
-    BigDecimal priceAtPurchase;
-
-    long quantity;
-
-    @Builder.Default
-    boolean active = true;
-
-    @ManyToOne
-    @JoinColumn(name = "cart_id")
-    Cart cart;
+    String imageUrl;
 
     @ManyToOne
     @JoinColumn(name = "product_variant_id")

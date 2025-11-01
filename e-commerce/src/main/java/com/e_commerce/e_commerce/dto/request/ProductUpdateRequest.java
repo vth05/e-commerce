@@ -18,14 +18,13 @@ import java.math.BigDecimal;
 public class ProductUpdateRequest {
     @Size(min = 1, message = "PRODUCT_NAME_INVALID")
     String name;
+
     @Size(min = 1, message = "PRODUCT_CATEGORY_INVALID")
     String category;
-    @DecimalMin(value = "1", message = "PRODUCT_PRICE_INVALID")
-    BigDecimal price;
-    @Min(value = 0, message = "PRODUCT_QUANTITY_INVALID")
-    long quantity;
+
     String description;
-    boolean active;
+
+    Boolean active;
 
     public void setName(String name) {
         this.name = name == null ? null : name.trim();

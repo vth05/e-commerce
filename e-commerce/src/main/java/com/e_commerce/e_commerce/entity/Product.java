@@ -5,8 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Data
@@ -18,15 +17,18 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
+
     String name;
+
     // save enum as string in database
     @Enumerated(EnumType.STRING)
     Category category;
-    BigDecimal price;
-    long quantity;
+
     String description;
+
     @Builder.Default
     boolean active = true;
+
     @OneToMany(mappedBy = "product")
-    Set<CartItem> cartItems;
+    List<ProductVariant> productVariants;
 }

@@ -19,13 +19,10 @@ import java.math.BigDecimal;
 public class ProductCreationRequest {
     @NotBlank(message = "PRODUCT_NAME_REQUIRED")
     String name;
+
     @NotBlank(message = "PRODUCT_CATEGORY_REQUIRED")
     String category;
-    @NotNull(message = "PRODUCT_PRICE_REQUIRED")
-    @DecimalMin(value = "1", message = "PRODUCT_PRICE_INVALID")
-    BigDecimal price;
-    @Min(value = 0, message = "PRODUCT_QUANTITY_INVALID")
-    long quantity;
+
     String description;
 
     public void setName(String name) {

@@ -1,6 +1,7 @@
 package com.e_commerce.e_commerce.entity;
 
-import com.e_commerce.e_commerce.enums.CartStatus;
+import com.e_commerce.e_commerce.enums.CheckoutStatus;
+import com.e_commerce.e_commerce.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -10,7 +11,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Data
@@ -19,15 +19,26 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
-public class Cart {
+public class Checkout {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
     String userId;
 
+    @ManyToOne()
+    @JoinColumn(name = "cart_id")
+    Cart cart;
+
     @Enumerated(EnumType.STRING)
-    CartStatus cartStatus;
+    CheckoutStatus status;
+
+    String shippingAddress;
+
+    @Enumerated(EnumType.STRING)
+    PaymentMethod paymentMethod;
+
+    BigDecimal totalPrice;
 
     @CreatedDate
     @Column(updatable = false)
@@ -36,16 +47,4 @@ public class Cart {
     @LastModifiedDate
     @Column(insertable = false)
     LocalDateTime updatedAt;
-
-    @OneToOne(mappedBy = "cart")
-    Checkout checkout;
-
-    @OneToMany(mappedBy = "cart")
-    List<CartItem> cartItems;
-
-    public BigDecimal getTotalPrice() {
-        return cartItems.stream()
-                .map(cartItem -> cartItem.getPriceAtPurchase().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 }
