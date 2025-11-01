@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,45 +46,42 @@ public class CartService {
             throw new AppException(ErrorCode.PRODUCT_INSUFFICIENT_STOCK);
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Jwt jwt = (Jwt) authentication.getPrincipal();
-        String userId = jwt.getClaimAsString("userId");
-        Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> {
+        String userId = getUserIdFromAuthentication();
+        Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseGet(() -> {
             Cart newCart = Cart.builder()
                     .userId(userId)
                     .cartStatus(CartStatus.ACTIVE)
-                    // avoid NullPointerException when calculating total price
-                    .totalPrice(BigDecimal.ZERO)
+                    // avoid NullPointerException when adding cartItem
                     .cartItems(new HashSet<>())
+                    // avoid NullPointerException when calculating totalPrice
+                    .totalPrice(BigDecimal.ZERO)
                     .build();
-            // create cart's id to find cartItem later
+            // create cartId to find cartItem later
             return cartRepository.save(newCart);
         });
 
-        CartItem cartItem = cartItemRepository.findByCartAndProduct(cart, product).orElseGet(() -> {
-            return CartItem.builder()
+        BigDecimal productCurrentPrice = product.getPrice();
+        CartItem cartItem = cartItemRepository.findByCartAndProductAndPriceAtPurchaseAndActive(cart, product, productCurrentPrice, true).orElseGet(() -> {
+            CartItem newCartItem = CartItem.builder()
                     .cart(cart)
                     .product(product)
-                    .priceAtPurchase(product.getPrice())
+                    .priceAtPurchase(productCurrentPrice)
                     .quantity(0)
                     .build();
+            cart.getCartItems().add(newCartItem);
+            return newCartItem;
         });
 
+        // update quantity of cartItem
         cartItem.setQuantity(cartItem.getQuantity() + quantityFromRequest);
         cartItemRepository.save(cartItem);
 
         // update totalPrice of cart
-        BigDecimal totalPriceFromRequest = product.getPrice().multiply(BigDecimal.valueOf(quantityFromRequest));
+        BigDecimal totalPriceFromRequest = productCurrentPrice.multiply(BigDecimal.valueOf(quantityFromRequest));
         cart.setTotalPrice(cart.getTotalPrice().add(totalPriceFromRequest));
-        // for mapper
-        cart.getCartItems().add(cartItem);
         cartRepository.save(cart);
 
-        // update quantity of product
-        product.setQuantity(product.getQuantity() - quantityFromRequest);
-        productRepository.save(product);
-
-        Set<CartItem> cartItems = cart.getCartItems();
+        Set<CartItem> cartItems = filterActiveCartItems(cart.getCartItems());
         return CartResponse.builder()
                 .id(cart.getId())
                 .userId(userId)
@@ -95,15 +93,89 @@ public class CartService {
                 .build();
     }
 
+    @Transactional
+    public CartResponse deleteItemFromCart(String cartItemId) {
+        String userId = getUserIdFromAuthentication();
+        Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
+        CartItem cartItem = cartItemRepository.findById(cartItemId).orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_EXISTED));
+        if (!cartItem.getCart().getId().equals(cart.getId())) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        // update totalPrice of cart
+        long cartItemQuantity = cartItem.getQuantity();
+        BigDecimal totalPriceReduction = cartItem.getPriceAtPurchase().multiply(BigDecimal.valueOf(cartItemQuantity));
+        cart.setTotalPrice(cart.getTotalPrice().subtract(totalPriceReduction));
+        cartRepository.save(cart);
+
+        // soft delete cartItem
+        cartItem.setActive(false);
+        cartItemRepository.save(cartItem);
+
+        Set<CartItem> cartItems = filterActiveCartItems(cart.getCartItems());
+        return CartResponse.builder()
+                .id(cart.getId())
+                .userId(userId)
+                .cartStatus(String.valueOf(cart.getCartStatus()))
+                .totalPrice(cart.getTotalPrice())
+                .createdAt(cart.getCreatedAt())
+                .updatedAt(cart.getUpdatedAt())
+                .cartItems(cartItemSetToCartItemResponseSet(cartItems))
+                .build();
+    }
+
+    @Transactional
+    public void deleteCart() {
+        String userId = getUserIdFromAuthentication();
+        Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
+        Set<CartItem> cartItems = cart.getCartItems();
+        cart.setCartStatus(CartStatus.CANCELED);
+        cart.setTotalPrice(BigDecimal.ZERO);
+        cartRepository.save(cart);
+
+        // update quantity of products
+        for (CartItem cartItem : cartItems) {
+            cartItem.setActive(false);
+            cartItemRepository.save(cartItem);
+        }
+    }
+
+    public CartResponse getCurrentCart() {
+        String userId = getUserIdFromAuthentication();
+        Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
+        Set<CartItem> cartItems = filterActiveCartItems(cart.getCartItems());
+        return CartResponse.builder()
+                .id(cart.getId())
+                .userId(userId)
+                .cartStatus(String.valueOf(cart.getCartStatus()))
+                .totalPrice(cart.getTotalPrice())
+                .createdAt(cart.getCreatedAt())
+                .updatedAt(cart.getUpdatedAt())
+                .cartItems(cartItemSetToCartItemResponseSet(cartItems))
+                .build();
+    }
+
+    private String getUserIdFromAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        return jwt.getClaimAsString("userId");
+    }
+
+    private Set<CartItem> filterActiveCartItems(Set<CartItem> cartItems) {
+        return cartItems.stream().filter(ci -> ci.isActive()).collect(Collectors.toSet());
+    }
+
     private Set<CartItemResponse> cartItemSetToCartItemResponseSet(Set<CartItem> cartItems) {
         Set<CartItemResponse> responses = new HashSet<>();
         for (CartItem cartItem : cartItems) {
             CartItemResponse response = CartItemResponse.builder()
+                    .id(cartItem.getId())
                     .productId(cartItem.getProduct().getId())
                     .productName(cartItem.getProduct().getName())
                     .priceAtPurchase(cartItem.getPriceAtPurchase())
                     .quantity(cartItem.getQuantity())
                     .totalPrice(cartItem.getPriceAtPurchase().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
+                    .active(cartItem.isActive())
                     .build();
             responses.add(response);
         }

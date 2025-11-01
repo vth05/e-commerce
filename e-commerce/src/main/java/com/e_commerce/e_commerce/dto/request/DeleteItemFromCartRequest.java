@@ -1,20 +1,22 @@
 package com.e_commerce.e_commerce.dto.request;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.math.BigDecimal;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AddItemToCartRequest {
+public class DeleteItemFromCartRequest {
     @NotBlank(message = "PRODUCT_ID_REQUIRED")
     String productId;
-    @NotNull(message = "PRODUCT_QUANTITY_REQUIRED")
-    @Min(value = 1, message = "PRODUCT_QUANTITY_INVALID")
-    Long quantity;
+    @NotNull(message = "PRICE_AT_PURCHASE_REQUIRED")
+    @DecimalMin(value = "1", message = "PRICE_AT_PURCHASE_INVALID")
+    BigDecimal priceAtPurchase;
 }

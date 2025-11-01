@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = "cart")
+@ToString(exclude = {"cart", "product"})
 public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -21,6 +21,8 @@ public class CartItem {
     String id;
     BigDecimal priceAtPurchase;
     long quantity;
+    @Builder.Default
+    boolean active = true;
     @ManyToOne
     @JoinColumn(name = "cart_id")
     Cart cart;

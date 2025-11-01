@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class ProductService {
     ProductMapper productMapper;
     ProductRepository productRepository;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse createProduct(ProductCreationRequest productCreationRequest) {
         Product product = productMapper.toProduct(productCreationRequest);
         product.setCategory(Category.valueOf(productCreationRequest.getCategory().toUpperCase()));
@@ -40,6 +42,7 @@ public class ProductService {
         return productRepository.findAll().stream().map((product) -> productMapper.toProductResponse(product)).toList();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse updateProduct(String productId, ProductUpdateRequest productUpdateRequest) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
         productMapper.updateProduct(product, productUpdateRequest);
@@ -49,6 +52,7 @@ public class ProductService {
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteProduct(String productId) {
         productRepository.deleteById(productId);
     }

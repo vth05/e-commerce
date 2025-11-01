@@ -36,10 +36,15 @@ public enum ErrorCode {
     PRODUCT_PRICE_INVALID(1019, "Product price must be at least 1", HttpStatus.BAD_REQUEST),
     PRODUCT_INSUFFICIENT_STOCK(1020, "Product stock is insufficient", HttpStatus.BAD_REQUEST),
     PRODUCT_ID_REQUIRED(1021, "Product ID is required", HttpStatus.BAD_REQUEST),
-    PRODUCT_QUANTITY_INVALID(1022, "Product quantity must be at least 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_QUANTITY_INVALID(1022, "Product quantity must be at least 1", HttpStatus.BAD_REQUEST),
     PRODUCT_QUANTITY_REQUIRED(1023, "Product quantity is required", HttpStatus.BAD_REQUEST),
     PRODUCT_NAME_INVALID(1024, "Product name at least {min} characters", HttpStatus.BAD_REQUEST),
     PRODUCT_CATEGORY_INVALID(1025, "Product category at least {min} characters", HttpStatus.BAD_REQUEST),
+    CART_ID_REQUIRED(1026, "Cart ID is required", HttpStatus.BAD_REQUEST),
+    PRICE_AT_PURCHASE_REQUIRED(1027, "Price at purchase is required", HttpStatus.BAD_REQUEST),
+    PRICE_AT_PURCHASE_INVALID(1028, "Price at purchase must be at least 1", HttpStatus.BAD_REQUEST),
+    CART_NOT_EXISTED(1029, "This cart does not already exist", HttpStatus.NOT_FOUND),
+    CART_ITEM_NOT_EXISTED(1030, "This cart item does not already exist", HttpStatus.NOT_FOUND),
     ;
 
     int code;
