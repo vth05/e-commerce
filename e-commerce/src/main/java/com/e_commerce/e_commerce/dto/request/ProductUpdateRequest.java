@@ -25,6 +25,7 @@ public class ProductUpdateRequest {
     @Min(value = 0, message = "PRODUCT_QUANTITY_INVALID")
     long quantity;
     String description;
+    boolean active;
 
     public void setName(String name) {
         this.name = name == null ? null : name.trim();

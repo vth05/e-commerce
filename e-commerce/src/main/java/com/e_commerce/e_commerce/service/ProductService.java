@@ -53,7 +53,9 @@ public class ProductService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteProduct(String productId) {
-        productRepository.deleteById(productId);
+    public ProductResponse deactivateProduct(String productId) {
+        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+        product.setActive(false);
+        return productMapper.toProductResponse(productRepository.save(product));
     }
 }

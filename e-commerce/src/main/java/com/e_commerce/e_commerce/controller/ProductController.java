@@ -49,10 +49,10 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    ApiResponse<Void> deleteProduct(@PathVariable String productId) {
-        productService.deleteProduct(productId);
-        return ApiResponse.<Void>builder()
+    ApiResponse<ProductResponse> deleteProduct(@PathVariable String productId) {
+        return ApiResponse.<ProductResponse>builder()
                 .message("Product deleted successfully")
+                .result(productService.deactivateProduct(productId))
                 .build();
     }
 }

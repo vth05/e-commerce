@@ -6,6 +6,8 @@ import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,6 +36,15 @@ public class GlobalHandlerException {
         return ResponseEntity.status(errorCode.getStatusCode()).body(ApiResponse.<Void>builder()
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
+                .build()
+        );
+    }
+
+    @ExceptionHandler(value = InternalAuthenticationServiceException.class)
+    ResponseEntity<ApiResponse> handleInternalAuthenticationServiceException(InternalAuthenticationServiceException internalAuthenticationServiceException) {
+        return ResponseEntity.status(401).body(ApiResponse.<Void>builder()
+                .code(401)
+                .message(internalAuthenticationServiceException.getMessage())
                 .build()
         );
     }

@@ -9,7 +9,6 @@ import com.e_commerce.e_commerce.entity.Product;
 import com.e_commerce.e_commerce.enums.CartStatus;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.exception.AppException;
-import com.e_commerce.e_commerce.mapper.CartMapper;
 import com.e_commerce.e_commerce.repository.CartItemRepository;
 import com.e_commerce.e_commerce.repository.CartRepository;
 import com.e_commerce.e_commerce.repository.ProductRepository;
@@ -36,7 +35,6 @@ public class CartService {
     CartRepository cartRepository;
     ProductRepository productRepository;
     CartItemRepository cartItemRepository;
-    CartMapper cartMapper;
 
     @Transactional
     public CartResponse addItemToCart(AddItemToCartRequest addItemToCartRequest) {

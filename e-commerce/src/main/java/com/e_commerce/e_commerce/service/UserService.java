@@ -83,7 +83,10 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
-    public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
+    public UserResponse deactivateUser(String userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        user.setActive(false);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 }
