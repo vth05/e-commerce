@@ -45,6 +45,8 @@ public enum ErrorCode {
     PRICE_AT_PURCHASE_INVALID(1028, "Price at purchase must be at least 1", HttpStatus.BAD_REQUEST),
     CART_NOT_EXISTED(1029, "This cart does not already exist", HttpStatus.NOT_FOUND),
     CART_ITEM_NOT_EXISTED(1030, "This cart item does not already exist", HttpStatus.NOT_FOUND),
+    INVALID_GENDER(1031, "Gender is invalid", HttpStatus.BAD_REQUEST),
+    INVALID_CATEGORY(1032, "Category is invalid", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

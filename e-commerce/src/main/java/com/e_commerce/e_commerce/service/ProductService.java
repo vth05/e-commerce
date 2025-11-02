@@ -29,7 +29,7 @@ public class ProductService {
     @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse createProduct(ProductCreationRequest productCreationRequest) {
         Product product = productMapper.toProduct(productCreationRequest);
-        product.setCategory(Category.valueOf(productCreationRequest.getCategory().toUpperCase()));
+        product.setCategory(parseCategory(productCreationRequest.getCategory()));
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
@@ -47,7 +47,7 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
         productMapper.updateProduct(product, productUpdateRequest);
         if (productUpdateRequest.getCategory() != null) {
-            product.setCategory(Category.valueOf(productUpdateRequest.getCategory().toUpperCase()));
+            product.setCategory(parseCategory(productUpdateRequest.getCategory()));
         }
         return productMapper.toProductResponse(productRepository.save(product));
     }
@@ -57,5 +57,13 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
         product.setActive(false);
         return productMapper.toProductResponse(productRepository.save(product));
+    }
+
+    private Category parseCategory(String categoryStr) {
+        try {
+            return Category.valueOf(categoryStr.toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            throw new AppException(ErrorCode.INVALID_CATEGORY);
+        }
     }
 }

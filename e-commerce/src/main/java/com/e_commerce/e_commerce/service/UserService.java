@@ -40,7 +40,9 @@ public class UserService {
         Set<Role> roles = new HashSet<>();
         roleRepository.findById("USER").ifPresent(role -> roles.add(role));
         user.setRoles(roles);
-        user.setGender(Gender.valueOf(userCreationRequest.getGender().toUpperCase()));
+        if (userCreationRequest.getGender() != null) {
+            user.setGender(parseGender(userCreationRequest.getGender()));
+        }
         // catch unique constraint violation
         try {
             user = userRepository.save(user);
@@ -72,7 +74,7 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(password));
         }
         if (userUpdateRequest.getGender() != null) {
-            user.setGender(Gender.valueOf(userUpdateRequest.getGender().toUpperCase()));
+            user.setGender(parseGender(userUpdateRequest.getGender()));
         }
         try {
             user = userRepository.save(user);
@@ -88,5 +90,13 @@ public class UserService {
         user.setTokenVersion(user.getTokenVersion() + 1);
         user.setActive(false);
         return userMapper.toUserResponse(userRepository.save(user));
+    }
+
+    private Gender parseGender(String genderStr) {
+        try {
+            return Gender.valueOf(genderStr.toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            throw new AppException(ErrorCode.INVALID_GENDER);
+        }
     }
 }
