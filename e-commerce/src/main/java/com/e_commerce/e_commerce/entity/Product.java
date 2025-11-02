@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,5 +31,5 @@ public class Product {
     boolean active = true;
 
     @OneToMany(mappedBy = "product")
-    List<ProductVariant> productVariants;
+    List<ProductVariant> productVariants = new ArrayList<>();
 }

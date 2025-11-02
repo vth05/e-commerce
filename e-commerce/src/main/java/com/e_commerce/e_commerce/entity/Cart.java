@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -41,7 +42,7 @@ public class Cart {
     Checkout checkout;
 
     @OneToMany(mappedBy = "cart")
-    List<CartItem> cartItems;
+    List<CartItem> cartItems = new ArrayList<>();
 
     public BigDecimal getTotalPrice() {
         return cartItems.stream()

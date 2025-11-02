@@ -26,12 +26,8 @@ public class Checkout {
 
     String userId;
 
-    @ManyToOne()
-    @JoinColumn(name = "cart_id")
-    Cart cart;
-
     @Enumerated(EnumType.STRING)
-    CheckoutStatus status;
+    CheckoutStatus checkoutStatus;
 
     String shippingAddress;
 
@@ -47,4 +43,8 @@ public class Checkout {
     @LastModifiedDate
     @Column(insertable = false)
     LocalDateTime updatedAt;
+
+    @OneToOne()
+    @JoinColumn(name = "cart_id")
+    Cart cart;
 }

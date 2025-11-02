@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -39,8 +40,8 @@ public class ProductVariant {
     Product product;
 
     @OneToMany(mappedBy = "productVariant")
-    List<CartItem> cartItems;
+    List<CartItem> cartItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "productVariant")
-    List<ProductImage> productImages;
+    List<ProductImage> productImages = new ArrayList<>();
 }
