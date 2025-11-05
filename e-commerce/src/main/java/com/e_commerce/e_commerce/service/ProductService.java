@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,12 +36,22 @@ public class ProductService {
     }
 
     public ProductResponse getProduct(String productId) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+        boolean isAdmin = isAdmin();
+        Product product;
+        if (isAdmin) {
+            product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+        } else {
+            product = productRepository.findByIdAndActiveTrue(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+        }
         return productMapper.toProductResponse(product);
     }
 
     public List<ProductResponse> getProducts() {
-        return productRepository.findAll().stream().map((product) -> productMapper.toProductResponse(product)).toList();
+        boolean isAdmin = isAdmin();
+        if (isAdmin) {
+            return productRepository.findAll().stream().map(product -> productMapper.toProductResponse(product)).toList();
+        }
+        return productRepository.findAllByActiveTrue().stream().map(product -> productMapper.toProductResponse(product)).toList();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -65,5 +77,10 @@ public class ProductService {
         } catch (IllegalArgumentException exception) {
             throw new AppException(ErrorCode.INVALID_CATEGORY);
         }
+    }
+
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

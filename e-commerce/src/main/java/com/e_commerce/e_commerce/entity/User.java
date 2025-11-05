@@ -18,7 +18,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-    @Column(unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
+    @Column(unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci", nullable = false)
     String username;
     String firstName;
     String lastName;
@@ -28,10 +28,10 @@ public class User {
     String email;
     @Enumerated(EnumType.STRING)
     Gender gender;
-    int tokenVersion;
     LocalDate dob;
     @Builder.Default
     boolean active = true;
+    int tokenVersion;
     @ManyToMany
     Set<Role> roles;
 }

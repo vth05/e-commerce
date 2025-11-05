@@ -5,7 +5,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -19,5 +19,5 @@ public class CartResponse {
     BigDecimal totalPrice;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
-    Set<CartItemResponse> cartItems;
+    List<CartItemResponse> cartItems;
 }

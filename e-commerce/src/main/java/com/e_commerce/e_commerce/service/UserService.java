@@ -54,7 +54,7 @@ public class UserService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
-        return userRepository.findAll().stream().map((user) -> userMapper.toUserResponse(user)).toList();
+        return userRepository.findAll().stream().map(user -> userMapper.toUserResponse(user)).toList();
     }
 
     @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
@@ -67,9 +67,10 @@ public class UserService {
     public UserResponse updateUser(String userId, UserUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         userMapper.updateUser(user, userUpdateRequest);
-        // if it is null, this is an optional update
         String password = userUpdateRequest.getPassword();
+        // optional
         if (password != null) {
+            // old JWT has been invalidated
             user.setTokenVersion(user.getTokenVersion() + 1);
             user.setPassword(passwordEncoder.encode(password));
         }
@@ -87,6 +88,7 @@ public class UserService {
     @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
     public UserResponse deactivateUser(String userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        // old JWT has been invalidated
         user.setTokenVersion(user.getTokenVersion() + 1);
         user.setActive(false);
         return userMapper.toUserResponse(userRepository.save(user));

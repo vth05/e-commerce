@@ -32,12 +32,12 @@ public enum ErrorCode {
     PRODUCT_NOT_EXISTED(1015, "This product does not already exist", HttpStatus.NOT_FOUND),
     PRODUCT_NAME_REQUIRED(1016, "Product name is required", HttpStatus.BAD_REQUEST),
     PRODUCT_CATEGORY_REQUIRED(1017, "Product category is required", HttpStatus.BAD_REQUEST),
-    PRODUCT_PRICE_REQUIRED(1018, "Product price is required", HttpStatus.BAD_REQUEST),
-    PRODUCT_PRICE_INVALID(1019, "Product price must be at least 1", HttpStatus.BAD_REQUEST),
+    PRODUCT_VARIANT_PRICE_REQUIRED(1018, "Product variant price is required", HttpStatus.BAD_REQUEST),
+    PRODUCT_VARIANT_PRICE_INVALID(1019, "Product variant price must be at least 0", HttpStatus.BAD_REQUEST),
     PRODUCT_INSUFFICIENT_STOCK(1020, "Product stock is insufficient", HttpStatus.BAD_REQUEST),
     PRODUCT_ID_REQUIRED(1021, "Product ID is required", HttpStatus.BAD_REQUEST),
-    PRODUCT_QUANTITY_INVALID(1022, "Product quantity must be at least 1", HttpStatus.BAD_REQUEST),
-    PRODUCT_QUANTITY_REQUIRED(1023, "Product quantity is required", HttpStatus.BAD_REQUEST),
+    PRODUCT_VARIANT_QUANTITY_INVALID(1022, "Product variant quantity must be at least 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_VARIANT_QUANTITY_REQUIRED(1023, "Product variant quantity is required", HttpStatus.BAD_REQUEST),
     PRODUCT_NAME_INVALID(1024, "Product name at least {min} characters", HttpStatus.BAD_REQUEST),
     PRODUCT_CATEGORY_INVALID(1025, "Product category at least {min} characters", HttpStatus.BAD_REQUEST),
     CART_ID_REQUIRED(1026, "Cart ID is required", HttpStatus.BAD_REQUEST),
@@ -47,6 +47,10 @@ public enum ErrorCode {
     CART_ITEM_NOT_EXISTED(1030, "This cart item does not already exist", HttpStatus.NOT_FOUND),
     INVALID_GENDER(1031, "Gender is invalid", HttpStatus.BAD_REQUEST),
     INVALID_CATEGORY(1032, "Category is invalid", HttpStatus.BAD_REQUEST),
+    SKU_REQUIRED(1033, "Sku is required", HttpStatus.BAD_REQUEST),
+    SKU_ALREADY_EXISTED(1034, "Sku does already exist", HttpStatus.NOT_FOUND),
+    PRODUCT_VARIANT_NOT_EXISTED(1035, "Product variant does not already exist", HttpStatus.NOT_FOUND),
+    PRODUCT_IS_NOT_ACTIVE(1036, "Product is not active", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

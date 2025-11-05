@@ -42,6 +42,6 @@ public class ProductVariant {
     @OneToMany(mappedBy = "productVariant")
     List<CartItem> cartItems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "productVariant")
-    List<ProductImage> productImages = new ArrayList<>();
+//    @OneToMany(mappedBy = "productVariant")
+//    List<ProductImage> productImages = new ArrayList<>();
 }

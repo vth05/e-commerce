@@ -19,9 +19,9 @@ public class UserResponse {
     String phoneNumber;
     String address;
     String email;
-    LocalDate dob;
     String gender;
-    int tokenVersion;
+    LocalDate dob;
     boolean active;
+    int tokenVersion;
     Set<RoleResponse> roles;
 }
