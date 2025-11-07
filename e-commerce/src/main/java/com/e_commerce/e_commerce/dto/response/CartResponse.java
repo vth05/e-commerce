@@ -16,8 +16,8 @@ public class CartResponse {
     String id;
     String userId;
     String cartStatus;
-    BigDecimal totalPrice;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    BigDecimal totalPrice;
     List<CartItemResponse> cartItems;
 }

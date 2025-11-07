@@ -14,6 +14,8 @@ import java.util.List;
 public class ProductVariantResponse {
     private String id;
 
+    String productVariantName;
+
     private BigDecimal price;
 
     private long quantity;

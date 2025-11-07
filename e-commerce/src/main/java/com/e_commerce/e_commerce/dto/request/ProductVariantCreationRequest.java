@@ -30,7 +30,4 @@ public class ProductVariantCreationRequest {
     String ram;
 
     String storage;
-
-    @NotBlank(message = "SKU_REQUIRED")
-    String sku;
 }

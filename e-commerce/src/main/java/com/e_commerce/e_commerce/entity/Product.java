@@ -31,5 +31,6 @@ public class Product {
     boolean active = true;
 
     @OneToMany(mappedBy = "product")
+    @Builder.Default
     List<ProductVariant> productVariants = new ArrayList<>();
 }

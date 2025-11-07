@@ -11,10 +11,10 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AddItemToCartRequest {
-    @NotBlank(message = "PRODUCT_ID_REQUIRED")
-    String productId;
-    @NotNull(message = "PRODUCT_QUANTITY_REQUIRED")
-    @Min(value = 1, message = "PRODUCT_QUANTITY_INVALID")
+public class AddProductVariantToCartRequest {
+    @NotBlank(message = "PRODUCT_VARIANT_ID_REQUIRED")
+    String productVariantId;
+    @NotNull(message = "PRODUCT_VARIANT_QUANTITY_REQUIRED")
+    @Min(value = 0, message = "PRODUCT_VARIANT_QUANTITY_INVALID")
     Long quantity;
 }

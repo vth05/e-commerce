@@ -19,6 +19,8 @@ public class ProductVariant {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
+    String productVariantName;
+
     BigDecimal price;
 
     long quantity;
@@ -40,8 +42,10 @@ public class ProductVariant {
     Product product;
 
     @OneToMany(mappedBy = "productVariant")
+    @Builder.Default
     List<CartItem> cartItems = new ArrayList<>();
 
 //    @OneToMany(mappedBy = "productVariant")
+//    @Builder.Default
 //    List<ProductImage> productImages = new ArrayList<>();
 }

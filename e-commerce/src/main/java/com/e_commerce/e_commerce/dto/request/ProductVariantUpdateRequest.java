@@ -27,7 +27,5 @@ public class ProductVariantUpdateRequest {
 
     String storage;
 
-    String sku;
-
     Boolean active;
 }
