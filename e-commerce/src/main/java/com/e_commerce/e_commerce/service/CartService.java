@@ -60,7 +60,6 @@ public class CartService {
             CartItem newCartItem = CartItem.builder()
                     .cart(cart)
                     .productVariant(productVariant)
-                    .priceAtPurchase(productCurrentPrice)
                     .quantity(0)
                     .build();
             // for response
