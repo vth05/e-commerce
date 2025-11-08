@@ -56,7 +56,7 @@ public class CartService {
         });
 
         BigDecimal productCurrentPrice = productVariant.getPrice();
-        CartItem cartItem = cartItemRepository.findByCartIdAndProductVariantIdAndPriceAtPurchaseAndActiveTrue(cart.getId(), productVariantId, productCurrentPrice).orElseGet(() -> {
+        CartItem cartItem = cartItemRepository.findByCartIdAndProductVariantIdAndActiveTrue(cart.getId(), productVariantId, productCurrentPrice).orElseGet(() -> {
             CartItem newCartItem = CartItem.builder()
                     .cart(cart)
                     .productVariant(productVariant)
@@ -73,6 +73,7 @@ public class CartService {
 
         // update quantity of cartItem
         cartItem.setQuantity(cartItem.getQuantity() + quantityFromRequest);
+        cartItem.setPriceAtPurchase(productVariant.getPrice());
         cartItemRepository.save(cartItem);
 
         // update updatedAt field (@LastModifiedDate doesn't work, I don't know, so I do it manually)
