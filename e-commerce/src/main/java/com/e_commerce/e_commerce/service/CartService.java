@@ -75,7 +75,7 @@ public class CartService {
         cartItem.setQuantity(cartItem.getQuantity() + quantityFromRequest);
         cartItemRepository.save(cartItem);
 
-        // update updatedAt field
+        // update updatedAt field (@LastModifiedDate doesn't work, I don't know, so I do it manually)
         cart.setUpdatedAt(LocalDateTime.now());
         cartRepository.save(cart);
 
