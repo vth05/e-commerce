@@ -55,8 +55,7 @@ public class CartService {
             return cartRepository.save(newCart);
         });
 
-        BigDecimal productCurrentPrice = productVariant.getPrice();
-        CartItem cartItem = cartItemRepository.findByCartIdAndProductVariantIdAndActiveTrue(cart.getId(), productVariantId, productCurrentPrice).orElseGet(() -> {
+        CartItem cartItem = cartItemRepository.findByCartIdAndProductVariantIdAndActiveTrue(cart.getId(), productVariantId).orElseGet(() -> {
             CartItem newCartItem = CartItem.builder()
                     .cart(cart)
                     .productVariant(productVariant)
