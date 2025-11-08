@@ -97,7 +97,6 @@ public class CartService {
 
         String userId = getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
-
         // ensure the cart item belongs to the same cart as the current user’s request
         if (!cartItem.getCart().getId().equals(cart.getId())) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -126,12 +125,12 @@ public class CartService {
     public void deleteCart() {
         String userId = getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
-        List<CartItem> cartItems = cart.getCartItems();
+
         cart.setCartStatus(CartStatus.CANCELED);
         cart.setUpdatedAt(LocalDateTime.now());
         cartRepository.save(cart);
 
-        // update quantity of products
+        List<CartItem> cartItems = cart.getCartItems();
         for (CartItem cartItem : cartItems) {
             cartItem.setActive(false);
             cartItemRepository.save(cartItem);
