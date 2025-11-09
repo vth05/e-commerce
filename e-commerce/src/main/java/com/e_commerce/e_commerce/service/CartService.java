@@ -125,15 +125,15 @@ public class CartService {
         String userId = getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
-        cart.setCartStatus(CartStatus.CANCELED);
-        cart.setUpdatedAt(LocalDateTime.now());
-        cartRepository.save(cart);
-
         List<CartItem> cartItems = cart.getCartItems();
         for (CartItem cartItem : cartItems) {
             cartItem.setActive(false);
             cartItemRepository.save(cartItem);
         }
+
+        cart.setCartStatus(CartStatus.CANCELED);
+        cart.setUpdatedAt(LocalDateTime.now());
+        cartRepository.save(cart);
     }
 
     public CartResponse getCurrentCart() {
