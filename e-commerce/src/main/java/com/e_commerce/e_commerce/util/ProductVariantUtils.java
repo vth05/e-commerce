@@ -2,7 +2,7 @@ package com.e_commerce.e_commerce.util;
 
 import java.text.Normalizer;
 
-public class ProductVariantUtil {
+public class ProductVariantUtils {
     private static String normalize(String input) {
         if (input == null) return "";
         // bỏ dấu

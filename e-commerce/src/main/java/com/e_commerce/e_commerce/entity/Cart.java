@@ -39,7 +39,7 @@ public class Cart {
     LocalDateTime updatedAt;
 
     @OneToOne(mappedBy = "cart")
-    Checkout checkout;
+    Order order;
 
     @OneToMany(mappedBy = "cart")
     @Builder.Default

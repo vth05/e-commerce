@@ -12,14 +12,12 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.repository.CartItemRepository;
 import com.e_commerce.e_commerce.repository.CartRepository;
 import com.e_commerce.e_commerce.repository.ProductVariantRepository;
+import com.e_commerce.e_commerce.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -45,7 +43,7 @@ public class CartService {
             throw new AppException(ErrorCode.PRODUCT_VARIANT_INSUFFICIENT_STOCK);
         }
 
-        String userId = getUserIdFromAuthentication();
+        String userId = SecurityUtils.getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseGet(() -> {
             Cart newCart = Cart.builder()
                     .userId(userId)
@@ -94,7 +92,7 @@ public class CartService {
     public CartResponse deleteCartItemFromCart(String cartItemId) {
         CartItem cartItem = cartItemRepository.findByIdAndActiveTrue(cartItemId).orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_EXISTED));
 
-        String userId = getUserIdFromAuthentication();
+        String userId = SecurityUtils.getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
         // ensure the cart item belongs to the same cart as the current user’s request
         if (!cartItem.getCart().getId().equals(cart.getId())) {
@@ -122,7 +120,7 @@ public class CartService {
 
     @Transactional
     public void deleteCart() {
-        String userId = getUserIdFromAuthentication();
+        String userId = SecurityUtils.getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
         List<CartItem> cartItems = cart.getCartItems();
@@ -137,7 +135,7 @@ public class CartService {
     }
 
     public CartResponse getCurrentCart() {
-        String userId = getUserIdFromAuthentication();
+        String userId = SecurityUtils.getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
         List<CartItem> cartItems = filterActiveCartItems(cart.getCartItems());
@@ -150,12 +148,6 @@ public class CartService {
                 .updatedAt(cart.getUpdatedAt())
                 .cartItems(cartItemSetToCartItemResponseSet(cartItems))
                 .build();
-    }
-
-    private String getUserIdFromAuthentication() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Jwt jwt = (Jwt) authentication.getPrincipal();
-        return jwt.getClaimAsString("userId");
     }
 
     private List<CartItem> filterActiveCartItems(List<CartItem> cartItems) {

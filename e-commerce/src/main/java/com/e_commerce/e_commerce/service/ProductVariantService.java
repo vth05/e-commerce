@@ -10,7 +10,7 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.ProductVariantMapper;
 import com.e_commerce.e_commerce.repository.ProductRepository;
 import com.e_commerce.e_commerce.repository.ProductVariantRepository;
-import com.e_commerce.e_commerce.util.ProductVariantUtil;
+import com.e_commerce.e_commerce.util.ProductVariantUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -40,8 +40,8 @@ public class ProductVariantService {
         }
         ProductVariant productVariant = productVariantMapper.toProductVariant(request);
         productVariant.setProduct(product);
-        productVariant.setProductVariantName(ProductVariantUtil.generateProductVariantName(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
-        productVariant.setSku(ProductVariantUtil.generateSku(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
+        productVariant.setProductVariantName(ProductVariantUtils.generateProductVariantName(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
+        productVariant.setSku(ProductVariantUtils.generateSku(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
         try {
             productVariant = productVariantRepository.save(productVariant);
         } catch (DataIntegrityViolationException e) {
@@ -77,8 +77,8 @@ public class ProductVariantService {
     public ProductVariantResponse updateProductVariant(ProductVariantUpdateRequest request, String productVariantId) {
         ProductVariant productVariant = productVariantRepository.findById(productVariantId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
         productVariantMapper.updateProductVariant(productVariant, request);
-        productVariant.setProductVariantName(ProductVariantUtil.generateProductVariantName(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
-        productVariant.setSku(ProductVariantUtil.generateSku(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
+        productVariant.setProductVariantName(ProductVariantUtils.generateProductVariantName(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
+        productVariant.setSku(ProductVariantUtils.generateSku(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
         try {
             productVariant = productVariantRepository.save(productVariant);
         } catch (DataIntegrityViolationException e) {

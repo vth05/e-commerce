@@ -4,35 +4,31 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductVariantResponse {
+public class VoucherResponse {
     String id;
 
-    String productVariantName;
+    String code;
 
-    BigDecimal price;
+    BigDecimal discountAmount;
 
-    BigDecimal weight;
+    BigDecimal discountPercent;
 
-    long quantity;
+    LocalDateTime validFrom;
 
-    String color;
+    LocalDateTime validTo;
 
-    String ram;
+    String description;
 
-    String storage;
+    Integer usageLimit;
 
-    String sku;
+    Integer usageCount;
 
     boolean active;
-
-    String productId;
-
-    List<String> productImages;
 }

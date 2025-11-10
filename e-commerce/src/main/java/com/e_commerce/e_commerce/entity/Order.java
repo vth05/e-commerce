@@ -11,15 +11,18 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
+@Table(name = "orders")
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
-public class Checkout {
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
@@ -29,10 +32,20 @@ public class Checkout {
     @Enumerated(EnumType.STRING)
     CheckoutStatus checkoutStatus;
 
+    String receiverName;
+
+    String receiverPhone;
+
     String shippingAddress;
 
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
+
+    BigDecimal subtotal;
+
+    BigDecimal shippingFee;
+
+    BigDecimal discount;
 
     BigDecimal totalPrice;
 
@@ -47,4 +60,12 @@ public class Checkout {
     @OneToOne()
     @JoinColumn(name = "cart_id")
     Cart cart;
+
+    @ManyToOne
+    @JoinColumn(name = "voucher_id")
+    Voucher voucher;
+
+    @OneToMany(mappedBy = "order")
+    @Builder.Default
+    List<OrderItem> orderItems = new ArrayList<>();
 }

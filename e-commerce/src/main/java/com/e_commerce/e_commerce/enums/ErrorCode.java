@@ -51,6 +51,15 @@ public enum ErrorCode {
     SKU_ALREADY_EXISTED(1034, "Sku does already exist", HttpStatus.NOT_FOUND),
     PRODUCT_VARIANT_NOT_EXISTED(1035, "Product variant does not already exist", HttpStatus.NOT_FOUND),
     PRODUCT_IS_NOT_ACTIVE(1036, "Product is not active", HttpStatus.BAD_REQUEST),
+    VOUCHER_CODE_NOT_EXISTED(1037, "Voucher code does not already exist", HttpStatus.NOT_FOUND),
+    INVALID_PAYMENT_METHOD(1038, "Payment method is invalid", HttpStatus.BAD_REQUEST),
+    PRODUCT_VARIANT_WEIGHT_INVALID(1039, "Product variant weight must be at least 0kg", HttpStatus.BAD_REQUEST),
+    VOUCHER_EXPIRED(1040, "Voucher is expired", HttpStatus.BAD_REQUEST),
+    VOUCHER_OUT_OF(1041, "Voucher is no longer valid", HttpStatus.BAD_REQUEST),
+    RECEIVER_NAME_REQUIRED(1042, "Receiver name is required", HttpStatus.BAD_REQUEST),
+    RECEIVER_PHONE_REQUIRED(1043, "Receiver phone is required", HttpStatus.BAD_REQUEST),
+    SHIPPING_ADDRESS_REQUIRED(1044, "Shipping address is required", HttpStatus.BAD_REQUEST),
+    PAYMENT_METHOD_REQUIRED(1045, "Payment method is required", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

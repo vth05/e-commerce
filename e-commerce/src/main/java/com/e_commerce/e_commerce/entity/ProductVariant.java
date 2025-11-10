@@ -23,6 +23,8 @@ public class ProductVariant {
 
     BigDecimal price;
 
+    BigDecimal weight;
+
     long quantity;
 
     String color;

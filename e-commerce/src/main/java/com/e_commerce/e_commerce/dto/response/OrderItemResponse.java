@@ -10,20 +10,16 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartItemResponse {
+public class OrderItemResponse {
     String id;
-
-    String productVariantId;
 
     String productName;
 
-    String productVariantName;
+    String productId;
+
+    String productVariantId;
 
     BigDecimal priceAtPurchase;
 
     long quantity;
-
-    BigDecimal totalPrice;
-
-    boolean active;
 }
