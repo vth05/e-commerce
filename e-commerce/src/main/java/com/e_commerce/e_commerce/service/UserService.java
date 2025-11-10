@@ -33,6 +33,26 @@ public class UserService {
     RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    EmailService emailService;
+    String welcomeEmail = """
+    Hi [User Name],
+    
+    Welcome to MyShop! 🎉
+    
+    Thank you for joining our community. We are excited to have you on board.
+    
+    Here’s what you can do next:
+    - Browse our latest products: https://www.myshop.com
+    - Check out exclusive offers for new members
+    - Manage your profile and preferences
+    
+    We’re here to make your shopping experience amazing. If you have any questions, feel free to reply to this email.
+    
+    Happy shopping! 🛍️
+    
+    Best regards,
+    The MyShop Team
+    """;
 
     public UserResponse createUser(UserCreationRequest userCreationRequest) {
         User user = userMapper.toUser(userCreationRequest);
@@ -48,6 +68,11 @@ public class UserService {
             user = userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
+        }
+        try {
+            emailService.sendEmail(user.getEmail(), "Thanks for joining my e-commerce web", welcomeEmail);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         return userMapper.toUserResponse(user);
     }
