@@ -5,4 +5,5 @@ public enum CheckoutStatus {
     PAID,
     SHIPPED,
     CANCELLED,
+    DRAFT,
 }

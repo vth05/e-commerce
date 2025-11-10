@@ -11,12 +11,12 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.OrderMapper;
 import com.e_commerce.e_commerce.repository.*;
 import com.e_commerce.e_commerce.util.SecurityUtils;
-import com.e_commerce.e_commerce.util.ShippingUtils;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -129,6 +129,38 @@ public class CheckoutService {
         );
         order.setCart(cart);
         return orderMapper.toOrderResponse(orderRepository.save(order));
+    }
+
+    public List<OrderResponse> getOrderHistoryOfCurrentUser(CheckoutStatus checkoutStatus) {
+        String userId = SecurityUtils.getUserIdFromAuthentication();
+        List<Order> orders;
+        if (checkoutStatus != null) {
+            orders = orderRepository.findAllByUserIdAndCheckoutStatus(userId, checkoutStatus);
+        } else {
+            orders = orderRepository.findAllByUserIdAndCheckoutStatusNot(userId, CheckoutStatus.DRAFT);
+        }
+        return orders.stream().map(order -> orderMapper.toOrderResponse(order)).toList();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<OrderResponse> listOrdersForAdmin(String userId, CheckoutStatus checkoutStatus) {
+        List<Order> orders;
+        if (checkoutStatus != null && userId != null) {
+            orders = orderRepository.findAllByUserIdAndCheckoutStatus(userId, checkoutStatus);
+        } else if (checkoutStatus != null) {
+            orders = orderRepository.findAllByCheckoutStatus(checkoutStatus);
+        } else if (userId != null) {
+            orders = orderRepository.findAllByUserId(userId);
+        } else {
+            orders = orderRepository.findAll();
+        }
+        return orders.stream().map(order -> orderMapper.toOrderResponse(order)).toList();
+    }
+
+    public OrderResponse getOrderById(String orderId) {
+        String userId = SecurityUtils.getUserIdFromAuthentication();
+        Order order = orderRepository.findByIdAndUserId(orderId, userId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+        return orderMapper.toOrderResponse(order);
     }
 
     private PaymentMethod parsePaymentMethod(String paymentMethod) {
