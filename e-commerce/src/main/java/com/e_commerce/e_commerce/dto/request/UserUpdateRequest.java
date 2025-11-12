@@ -26,6 +26,7 @@ public class UserUpdateRequest {
     String gender;
     LocalDate dob;
     Boolean active;
+    Boolean emailVerified;
 
     public void setUsername(String username) {
         this.username = username == null ? null : username.trim();

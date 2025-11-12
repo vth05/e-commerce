@@ -31,7 +31,10 @@ public class User {
     LocalDate dob;
     @Builder.Default
     boolean active = true;
+    boolean emailVerified;
     int tokenVersion;
+    @OneToOne(mappedBy = "user")
+    VerificationToken verificationToken;
     @ManyToMany
     Set<Role> roles;
 }

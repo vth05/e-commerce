@@ -22,6 +22,7 @@ public class UserResponse {
     String gender;
     LocalDate dob;
     boolean active;
+    boolean emailVerified;
     int tokenVersion;
     Set<RoleResponse> roles;
 }

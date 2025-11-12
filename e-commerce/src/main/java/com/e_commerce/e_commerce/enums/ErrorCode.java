@@ -61,6 +61,8 @@ public enum ErrorCode {
     SHIPPING_ADDRESS_REQUIRED(1044, "Shipping address is required", HttpStatus.BAD_REQUEST),
     PAYMENT_METHOD_REQUIRED(1045, "Payment method is required", HttpStatus.BAD_REQUEST),
     ORDER_NOT_EXISTED(1046, "Order does not already exist", HttpStatus.NOT_FOUND),
+    TOKEN_NOT_FOUND(1047, "Verification token not found", HttpStatus.BAD_REQUEST),
+    TOKEN_EXPIRED(1048, "Verification token has expired", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

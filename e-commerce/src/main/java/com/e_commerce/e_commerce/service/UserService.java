@@ -5,12 +5,14 @@ import com.e_commerce.e_commerce.entity.Role;
 import com.e_commerce.e_commerce.entity.User;
 import com.e_commerce.e_commerce.dto.request.UserCreationRequest;
 import com.e_commerce.e_commerce.dto.response.UserResponse;
+import com.e_commerce.e_commerce.entity.VerificationToken;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.enums.Gender;
 import com.e_commerce.e_commerce.mapper.UserMapper;
 import com.e_commerce.e_commerce.repository.RoleRepository;
 import com.e_commerce.e_commerce.repository.UserRepository;
 import com.e_commerce.e_commerce.exception.AppException;
+import com.e_commerce.e_commerce.template.EmailTemplates;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,9 +22,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,25 +38,7 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     EmailService emailService;
-    String welcomeEmail = """
-    Hi [User Name],
-    
-    Welcome to MyShop! 🎉
-    
-    Thank you for joining our community. We are excited to have you on board.
-    
-    Here’s what you can do next:
-    - Browse our latest products: https://www.myshop.com
-    - Check out exclusive offers for new members
-    - Manage your profile and preferences
-    
-    We’re here to make your shopping experience amazing. If you have any questions, feel free to reply to this email.
-    
-    Happy shopping! 🛍️
-    
-    Best regards,
-    The MyShop Team
-    """;
+    VerificationService verificationService;
 
     public UserResponse createUser(UserCreationRequest userCreationRequest) {
         User user = userMapper.toUser(userCreationRequest);
@@ -69,11 +55,9 @@ public class UserService {
         } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
         }
-        try {
-            emailService.sendEmail(user.getEmail(), "Thanks for joining my e-commerce web", welcomeEmail);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
+        verificationService.sendVerificationEmail(user);
+
         return userMapper.toUserResponse(user);
     }
 
@@ -91,13 +75,14 @@ public class UserService {
     @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
     public UserResponse updateUser(String userId, UserUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        String oldEmail = user.getEmail();
         userMapper.updateUser(user, userUpdateRequest);
-        String password = userUpdateRequest.getPassword();
+        String newPassword = userUpdateRequest.getPassword();
         // optional
-        if (password != null) {
+        if (newPassword != null) {
             // old JWT has been invalidated
             user.setTokenVersion(user.getTokenVersion() + 1);
-            user.setPassword(passwordEncoder.encode(password));
+            user.setPassword(passwordEncoder.encode(newPassword));
         }
         if (userUpdateRequest.getGender() != null) {
             user.setGender(parseGender(userUpdateRequest.getGender()));
@@ -106,6 +91,29 @@ public class UserService {
             user = userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
+        }
+        // username may change or not
+        String newUsername = user.getUsername();
+        String newEmail = userUpdateRequest.getEmail();
+        if (newPassword != null) {
+            try {
+                if (newEmail != null && !newEmail.equals(oldEmail)) {
+                    emailService.sendEmail(oldEmail, EmailTemplates.PASSWORD_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildPasswordChangedEmail(newUsername));
+                    emailService.sendEmail(newEmail, EmailTemplates.PASSWORD_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildPasswordChangedEmail(newUsername));
+                } else {
+                    emailService.sendEmail(oldEmail, EmailTemplates.PASSWORD_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildPasswordChangedEmail(newUsername));
+                }
+            } catch (Exception e) {
+                log.warn("Exception sending password changed email: {}", e.getMessage());
+            }
+        }
+        if (newEmail != null && !newEmail.equals(oldEmail)) {
+            try {
+                emailService.sendEmail(oldEmail, EmailTemplates.EMAIL_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildEmailChangedEmail(newUsername, newEmail));
+                emailService.sendEmail(newEmail, EmailTemplates.EMAIL_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildEmailChangedEmail(newUsername, newEmail));
+            } catch (Exception e) {
+                log.warn("Exception sending email changed email: {}", e.getMessage());
+            }
         }
         return userMapper.toUserResponse(user);
     }
