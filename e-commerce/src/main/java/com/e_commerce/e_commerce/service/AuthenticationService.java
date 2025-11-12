@@ -146,6 +146,9 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         User user = userRepository.findByUsername(jwtClaimsSet.getSubject()).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        if (!user.isEmailVerified()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         if (user.getTokenVersion() != ((Number) jwtClaimsSet.getClaim("tokenVersion")).intValue()) {
             log.info("Token version mismatch (verifyToken method): {}", token);
             throw new AppException(ErrorCode.UNAUTHENTICATED);
