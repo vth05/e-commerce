@@ -63,4 +63,13 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
     }
+
+    @Override
+    public String toString() {
+        return "CustomUserDetails{" +
+                "userId='" + userId + '\'' +
+                ", username='" + username + '\'' +
+                ", authorities=" + authorities +
+                '}';
+    }
 }

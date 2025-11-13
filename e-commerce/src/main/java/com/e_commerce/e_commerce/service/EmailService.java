@@ -37,8 +37,6 @@ public class EmailService {
 
         // send email
         Response response = sg.api(request);
-        log.info(String.valueOf(response.getStatusCode()));
-        log.info(response.getBody());
-        log.info(response.getHeaders().toString());
+        log.info("Send email is successful?: {}", String.valueOf(response.getStatusCode()));
     }
 }

@@ -147,6 +147,7 @@ public class AuthenticationService {
         }
         User user = userRepository.findByUsername(jwtClaimsSet.getSubject()).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
         if (!user.isEmailVerified()) {
+            log.info("User's emailVerified is false");
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         if (user.getTokenVersion() != ((Number) jwtClaimsSet.getClaim("tokenVersion")).intValue()) {
