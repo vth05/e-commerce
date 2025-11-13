@@ -11,14 +11,13 @@ import com.e_commerce.e_commerce.mapper.ProductVariantMapper;
 import com.e_commerce.e_commerce.repository.ProductRepository;
 import com.e_commerce.e_commerce.repository.ProductVariantRepository;
 import com.e_commerce.e_commerce.util.ProductVariantUtils;
+import com.e_commerce.e_commerce.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,7 +50,7 @@ public class ProductVariantService {
     }
 
     public ProductVariantResponse getProductVariantById(String productVariantId) {
-        boolean isAdmin = isAdmin();
+        boolean isAdmin = SecurityUtils.isAdmin();
         ProductVariant productVariant;
         if (isAdmin) {
             productVariant = productVariantRepository.findById(productVariantId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
@@ -64,7 +63,7 @@ public class ProductVariantService {
     }
 
     public List<ProductVariantResponse> getProductVariantsByProductId(String productId) {
-        boolean isAdmin = isAdmin();
+        boolean isAdmin = SecurityUtils.isAdmin();
         if (isAdmin) {
             return productVariantRepository.findAllByProductId(productId).stream().map(productVariant -> productVariantMapper.toProductVariantResponse(productVariant)).toList();
         }
@@ -92,10 +91,5 @@ public class ProductVariantService {
         ProductVariant productVariant = productVariantRepository.findById(productVariantId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
         productVariant.setActive(false);
         return productVariantMapper.toProductVariantResponse(productVariantRepository.save(productVariant));
-    }
-
-    private boolean isAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

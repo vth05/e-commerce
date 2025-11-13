@@ -34,11 +34,10 @@ public class VerificationService {
                 .user(user)
                 .build();
         verificationTokenRepository.save(verificationToken);
-        String username = user.getUsername();
-        String email = user.getEmail();
+
         String verificationLink = "http://localhost:8080/verify/email/" + id;
         try {
-            emailService.sendEmail(email, EmailTemplates.VERIFICATION_EMAIL_SUBJECT, EmailTemplates.buildVerificationEmail(username, verificationLink));
+            emailService.sendEmail(user.getEmail(), EmailTemplates.VERIFICATION_EMAIL_SUBJECT, EmailTemplates.buildVerificationEmail(user.getUsername(), verificationLink));
             log.info("Verification email: {}", verificationLink);
         } catch (Exception e) {
             log.warn("Exception sending verification email: {}", e.getMessage());
