@@ -6,7 +6,6 @@ import com.e_commerce.e_commerce.entity.User;
 import com.e_commerce.e_commerce.dto.request.UserCreationRequest;
 import com.e_commerce.e_commerce.dto.response.UserResponse;
 import com.e_commerce.e_commerce.enums.ErrorCode;
-import com.e_commerce.e_commerce.enums.Gender;
 import com.e_commerce.e_commerce.mapper.UserMapper;
 import com.e_commerce.e_commerce.repository.RoleRepository;
 import com.e_commerce.e_commerce.repository.UserRepository;
@@ -28,7 +27,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Service
