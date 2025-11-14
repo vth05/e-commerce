@@ -13,6 +13,7 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.template.EmailTemplates;
 import com.e_commerce.e_commerce.util.SecurityUtils;
 import com.e_commerce.e_commerce.util.UserUtils;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -41,6 +42,7 @@ public class UserService {
     EmailService emailService;
     VerificationService verificationService;
 
+    @Transactional
     public UserResponse createUser(UserCreationRequest userCreationRequest) {
         User user = userMapper.toUser(userCreationRequest);
         user.setPassword(passwordEncoder.encode(userCreationRequest.getPassword()));
@@ -67,7 +69,6 @@ public class UserService {
         Sort sort = sortDir.equalsIgnoreCase("desc") ?
                 Sort.by(sortBy).descending() :
                 Sort.by(sortBy).ascending();
-
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<User> users = userRepository.findAll(pageable);
 

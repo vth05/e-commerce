@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,9 +29,14 @@ public class ProductController {
     }
 
     @GetMapping
-    ApiResponse<List<ProductResponse>> getProducts() {
-        return ApiResponse.<List<ProductResponse>>builder()
-                .result(productService.getProducts())
+    ApiResponse<Page<ProductResponse>> getProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .result(productService.getProducts(page, size, sortBy, sortDir))
                 .build();
     }
 

@@ -9,16 +9,17 @@ import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.ProductMapper;
 import com.e_commerce.e_commerce.repository.ProductRepository;
+import com.e_commerce.e_commerce.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class ProductService {
     }
 
     public ProductResponse getProduct(String productId) {
-        boolean isAdmin = isAdmin();
+        boolean isAdmin = SecurityUtils.isAdmin();
         Product product;
         if (isAdmin) {
             product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
@@ -46,12 +47,21 @@ public class ProductService {
         return productMapper.toProductResponse(product);
     }
 
-    public List<ProductResponse> getProducts() {
-        boolean isAdmin = isAdmin();
+    public Page<ProductResponse> getProducts(int page, int size, String sortBy, String sortDir) {
+        boolean isAdmin = SecurityUtils.isAdmin();
+
+        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() :
+                Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Product> products;
         if (isAdmin) {
-            return productRepository.findAll().stream().map(product -> productMapper.toProductResponse(product)).toList();
+            products = productRepository.findAll(pageable);
+        } else {
+            products = productRepository.findAllByActiveTrue(pageable);
         }
-        return productRepository.findAllByActiveTrue().stream().map(product -> productMapper.toProductResponse(product)).toList();
+
+        return products.map(product -> productMapper.toProductResponse(product));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -77,10 +87,5 @@ public class ProductService {
         } catch (IllegalArgumentException exception) {
             throw new AppException(ErrorCode.INVALID_CATEGORY);
         }
-    }
-
-    private boolean isAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication.getAuthorities().stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

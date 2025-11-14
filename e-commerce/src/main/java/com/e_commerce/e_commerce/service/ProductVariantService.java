@@ -17,10 +17,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -62,14 +64,22 @@ public class ProductVariantService {
         return productVariantMapper.toProductVariantResponse(productVariant);
     }
 
-    public List<ProductVariantResponse> getProductVariantsByProductId(String productId) {
+    public Page<ProductVariantResponse> getProductVariantsByProductId(String productId, int page, int size, String sortBy, String sortDir) {
         boolean isAdmin = SecurityUtils.isAdmin();
+
+        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() :
+                Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<ProductVariant> productVariants;
         if (isAdmin) {
-            return productVariantRepository.findAllByProductId(productId).stream().map(productVariant -> productVariantMapper.toProductVariantResponse(productVariant)).toList();
+            productVariants = productVariantRepository.findAllByProductId(productId, pageable);
+        } else {
+            productRepository.findByIdAndActiveTrue(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+            productVariants = productVariantRepository.findAllByProductIdAndActiveTrue(productId, pageable);
         }
-        productRepository.findByIdAndActiveTrue(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
-        log.info("pass findByIdAndActiveTrue in productRepository");
-        return productVariantRepository.findAllByProductIdAndActiveTrue(productId).stream().map(productVariant -> productVariantMapper.toProductVariantResponse(productVariant)).toList();
+
+        return productVariants.map(productVariant -> productVariantMapper.toProductVariantResponse(productVariant));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

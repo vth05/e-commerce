@@ -9,9 +9,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/product-variants")
@@ -35,9 +34,15 @@ public class ProductVariantController {
     }
 
     @GetMapping("/product/{productId}")
-    public ApiResponse<List<ProductVariantResponse>> getProductVariantsByProductId(@PathVariable String productId) {
-        return ApiResponse.<List<ProductVariantResponse>>builder()
-                .result(productVariantService.getProductVariantsByProductId(productId))
+    public ApiResponse<Page<ProductVariantResponse>> getProductVariantsByProductId(
+            @PathVariable String productId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "productVariantName") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return ApiResponse.<Page<ProductVariantResponse>>builder()
+                .result(productVariantService.getProductVariantsByProductId(productId, page, size, sortBy, sortDir))
                 .build();
     }
 
