@@ -12,6 +12,7 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.repository.CartItemRepository;
 import com.e_commerce.e_commerce.repository.CartRepository;
 import com.e_commerce.e_commerce.repository.ProductVariantRepository;
+import com.e_commerce.e_commerce.util.CartUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -59,8 +60,6 @@ public class CartService {
                     .productVariant(productVariant)
                     .quantity(0)
                     .build();
-            // for response
-            cart.getCartItems().add(newCartItem);
             return newCartItem;
         });
         if (productVariant.getQuantity() < quantityFromRequest + cartItem.getQuantity()) {
@@ -76,16 +75,8 @@ public class CartService {
         cart.setUpdatedAt(LocalDateTime.now());
         cartRepository.save(cart);
 
-        List<CartItem> cartItems = filterActiveCartItems(cart.getCartItems());
-        return CartResponse.builder()
-                .id(cart.getId())
-                .userId(userId)
-                .cartStatus(String.valueOf(cart.getCartStatus()))
-                .totalPrice(cart.getTotalPrice())
-                .createdAt(cart.getCreatedAt())
-                .updatedAt(cart.getUpdatedAt())
-                .cartItems(cartItemSetToCartItemResponseSet(cartItems))
-                .build();
+        List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
+        return buildCartResponse(cart, cartItems);
     }
 
     @Transactional
@@ -96,7 +87,7 @@ public class CartService {
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
         // ensure the cart item belongs to the same cart as the current user’s request
         if (!cartItem.getCart().getId().equals(cart.getId())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
         // soft delete cartItem
@@ -106,16 +97,8 @@ public class CartService {
         cart.setUpdatedAt(LocalDateTime.now());
         cartRepository.save(cart);
 
-        List<CartItem> cartItems = filterActiveCartItems(cart.getCartItems());
-        return CartResponse.builder()
-                .id(cart.getId())
-                .userId(userId)
-                .cartStatus(String.valueOf(cart.getCartStatus()))
-                .totalPrice(cart.getTotalPrice())
-                .createdAt(cart.getCreatedAt())
-                .updatedAt(cart.getUpdatedAt())
-                .cartItems(cartItemSetToCartItemResponseSet(cartItems))
-                .build();
+        List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
+        return buildCartResponse(cart, cartItems);
     }
 
     @Transactional
@@ -123,7 +106,7 @@ public class CartService {
         String userId = SecurityUtils.getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
-        List<CartItem> cartItems = cart.getCartItems();
+        List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
         for (CartItem cartItem : cartItems) {
             cartItem.setActive(false);
             cartItemRepository.save(cartItem);
@@ -138,23 +121,11 @@ public class CartService {
         String userId = SecurityUtils.getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
-        List<CartItem> cartItems = filterActiveCartItems(cart.getCartItems());
-        return CartResponse.builder()
-                .id(cart.getId())
-                .userId(userId)
-                .cartStatus(String.valueOf(cart.getCartStatus()))
-                .totalPrice(cart.getTotalPrice())
-                .createdAt(cart.getCreatedAt())
-                .updatedAt(cart.getUpdatedAt())
-                .cartItems(cartItemSetToCartItemResponseSet(cartItems))
-                .build();
+        List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
+        return buildCartResponse(cart, cartItems);
     }
 
-    private List<CartItem> filterActiveCartItems(List<CartItem> cartItems) {
-        return cartItems.stream().filter(cartItem -> cartItem.isActive()).toList();
-    }
-
-    private List<CartItemResponse> cartItemSetToCartItemResponseSet(List<CartItem> cartItems) {
+    private List<CartItemResponse> cartItemListToCartItemResponseList(List<CartItem> cartItems) {
         List<CartItemResponse> responses = new ArrayList<>();
         for (CartItem cartItem : cartItems) {
             ProductVariant productVariant = cartItem.getProductVariant();
@@ -171,5 +142,17 @@ public class CartService {
             responses.add(response);
         }
         return responses;
+    }
+
+    private CartResponse buildCartResponse(Cart cart, List<CartItem> cartItems) {
+        return CartResponse.builder()
+                .id(cart.getId())
+                .userId(cart.getUserId())
+                .cartStatus(String.valueOf(cart.getCartStatus()))
+                .totalPrice(CartUtils.calculateTotalPrice(cartItems))
+                .createdAt(cart.getCreatedAt())
+                .updatedAt(cart.getUpdatedAt())
+                .cartItems(cartItemListToCartItemResponseList(cartItems))
+                .build();
     }
 }

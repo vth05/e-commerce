@@ -44,11 +44,4 @@ public class Cart {
     @OneToMany(mappedBy = "cart")
     @Builder.Default
     List<CartItem> cartItems = new ArrayList<>();
-
-    public BigDecimal getTotalPrice() {
-        return cartItems.stream()
-                .filter(cartItem -> cartItem.isActive())
-                .map(cartItem -> cartItem.getPriceAtPurchase().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 }

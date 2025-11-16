@@ -35,12 +35,15 @@ public class CheckoutService {
     OrderItemRepository orderItemRepository;
     OrderRepository orderRepository;
     OrderMapper orderMapper;
+    CartItemRepository cartItemRepository;
 
     @Transactional
     public OrderResponse checkout(CheckoutRequest request) {
+        // get cart by userId
         String userId = SecurityUtils.getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
+        // create new order
         Order order = Order.builder()
                 .userId(userId)
                 .checkoutStatus(CheckoutStatus.PAID)
@@ -50,49 +53,50 @@ public class CheckoutService {
 
         // calculate totalPriceOfCart
         BigDecimal totalPriceOfCart = BigDecimal.ZERO;
-        List<CartItem> cartItems = cart.getCartItems();
+        List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
         for (CartItem cartItem : cartItems) {
-            if (cartItem.isActive()) {
-                ProductVariant productVariant = productVariantRepository.findByIdAndActiveTrue(cartItem.getProductVariant().getId()).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
-                long quantityOfCartItem = cartItem.getQuantity();
-                long quantityOfProductVariant = productVariant.getQuantity();
-                // check stock
-                if (quantityOfProductVariant < quantityOfCartItem) {
-                    throw new AppException(ErrorCode.PRODUCT_VARIANT_INSUFFICIENT_STOCK);
-                }
+            ProductVariant productVariant = productVariantRepository.findByIdAndActiveTrue(cartItem.getProductVariant().getId()).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
+            long quantityOfCartItem = cartItem.getQuantity();
+            long quantityOfProductVariant = productVariant.getQuantity();
 
-                // reduce stock
-                productVariant.setQuantity(quantityOfProductVariant - quantityOfCartItem);
-                productVariantRepository.save(productVariant);
-
-                // get the newest price
-                BigDecimal priceAtPurchase = productVariant.getPrice();
-                totalPriceOfCart = totalPriceOfCart.add(priceAtPurchase.multiply(BigDecimal.valueOf(quantityOfCartItem)));
-                OrderItem orderItem = OrderItem.builder()
-                        .productName(productVariant.getProduct().getName())
-                        .productId(productVariant.getProduct().getId())
-                        .productVariantId(productVariant.getId())
-                        .priceAtPurchase(priceAtPurchase)
-                        .quantity(quantityOfCartItem)
-                        .order(order)
-                        .build();
-                orderItemRepository.save(orderItem);
-
-                // for response
-                order.getOrderItems().add(orderItem);
+            // check stock
+            if (quantityOfProductVariant < quantityOfCartItem) {
+                throw new AppException(ErrorCode.PRODUCT_VARIANT_INSUFFICIENT_STOCK);
             }
+
+            // reduce stock
+            productVariant.setQuantity(quantityOfProductVariant - quantityOfCartItem);
+            productVariantRepository.save(productVariant);
+
+            // get the newest price
+            BigDecimal priceAtPurchase = productVariant.getPrice();
+            totalPriceOfCart = totalPriceOfCart.add(priceAtPurchase.multiply(BigDecimal.valueOf(quantityOfCartItem)));
+            OrderItem orderItem = OrderItem.builder()
+                    .productName(productVariant.getProduct().getName())
+                    .productId(productVariant.getProduct().getId())
+                    .productVariantId(productVariant.getId())
+                    .priceAtPurchase(priceAtPurchase)
+                    .quantity(quantityOfCartItem)
+                    .order(order)
+                    .build();
+            orderItemRepository.save(orderItem);
+
+            // for response
+            order.getOrderItems().add(orderItem);
         }
 
         // calculate discount
         BigDecimal discount = BigDecimal.ZERO;
         // optional
         if (request.getVoucherCode() != null && !request.getVoucherCode().isBlank()) {
-            Voucher voucher = voucherRepository.findByCode(request.getVoucherCode()).orElseThrow(() -> new AppException(ErrorCode.VOUCHER_CODE_NOT_EXISTED));
+            Voucher voucher = voucherRepository.findByCodeAndActiveTrue(request.getVoucherCode()).orElseThrow(() -> new AppException(ErrorCode.VOUCHER_CODE_NOT_EXISTED));
             LocalDateTime now = LocalDateTime.now();
+
             // check usage
             if (voucher.getUsageCount().equals(voucher.getUsageLimit())) {
                 throw new AppException(ErrorCode.VOUCHER_OUT_OF);
             }
+
             // check if the voucher is expired
             if (now.isBefore(voucher.getValidFrom()) || now.isAfter(voucher.getValidTo())) {
                 throw new AppException(ErrorCode.VOUCHER_EXPIRED);
@@ -112,9 +116,11 @@ public class CheckoutService {
             order.setVoucher(voucher);
         }
 
+        // save cart
         cart.setCartStatus(CartStatus.CHECKED_OUT);
         cartRepository.save(cart);
 
+        // save order
         order.setReceiverName(request.getReceiverName());
         order.setReceiverPhone(request.getReceiverPhone());
         order.setShippingAddress(request.getShippingAddress());
