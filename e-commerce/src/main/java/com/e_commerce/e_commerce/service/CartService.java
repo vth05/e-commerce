@@ -133,7 +133,6 @@ public class CartService {
         entityManager.flush();
         entityManager.clear();
 
-        cart.setCartStatus(CartStatus.CANCELED);
         cart.setUpdatedAt(LocalDateTime.now());
         cartRepository.save(cart);
     }

@@ -26,6 +26,7 @@ public class SecurityConfig {
             "/auth/logout",
             "/auth/refresh-token",
             "/users",
+            "/verify/email/**",
     };
     CustomJwtDecoder customJwtDecoder;
 
@@ -35,6 +36,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
