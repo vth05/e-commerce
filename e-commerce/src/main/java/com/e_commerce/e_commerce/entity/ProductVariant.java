@@ -39,7 +39,7 @@ public class ProductVariant {
     @Builder.Default
     boolean active = true;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     Product product;
 

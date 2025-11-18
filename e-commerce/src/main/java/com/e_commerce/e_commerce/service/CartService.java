@@ -14,11 +14,15 @@ import com.e_commerce.e_commerce.repository.CartRepository;
 import com.e_commerce.e_commerce.repository.ProductVariantRepository;
 import com.e_commerce.e_commerce.util.CartUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -34,6 +38,11 @@ public class CartService {
     CartRepository cartRepository;
     ProductVariantRepository productVariantRepository;
     CartItemRepository cartItemRepository;
+    @NonFinal
+    @Value("${spring.jpa.properties.hibernate.jdbc.batch_size}")
+    int batchSize;
+    @PersistenceContext
+    EntityManager entityManager;
 
     @Transactional
     public CartResponse addCartItemToCart(AddProductVariantToCartRequest request) {
@@ -107,10 +116,22 @@ public class CartService {
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
         List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
-        for (CartItem cartItem : cartItems) {
+//        for (CartItem cartItem : cartItems) {
+//            cartItem.setActive(false);
+//            cartItemRepository.save(cartItem);
+//        }
+
+        for (int i = 0; i < cartItems.size(); i++) {
+            CartItem cartItem = cartItems.get(i);
+            if (i > 0 && i % batchSize == 0) {
+                entityManager.flush();
+                entityManager.clear();
+            }
             cartItem.setActive(false);
-            cartItemRepository.save(cartItem);
+            entityManager.merge(cartItem);
         }
+        entityManager.flush();
+        entityManager.clear();
 
         cart.setCartStatus(CartStatus.CANCELED);
         cart.setUpdatedAt(LocalDateTime.now());

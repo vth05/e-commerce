@@ -45,10 +45,11 @@ public class CheckoutService {
 
         // create new order
         Order order = Order.builder()
+                .cart(cart)
                 .userId(userId)
                 .checkoutStatus(CheckoutStatus.PAID)
                 .build();
-        // create orderId
+        // create orderId (= cartId)
         order = orderRepository.save(order);
 
         // calculate totalPriceOfCart
@@ -133,7 +134,6 @@ public class CheckoutService {
                         .subtract(discount)
                         .setScale(0, RoundingMode.CEILING)
         );
-        order.setCart(cart);
         return orderMapper.toOrderResponse(orderRepository.save(order));
     }
 

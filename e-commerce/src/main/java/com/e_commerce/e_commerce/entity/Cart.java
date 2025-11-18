@@ -38,9 +38,6 @@ public class Cart {
     @Column(insertable = false)
     LocalDateTime updatedAt;
 
-    @OneToOne(mappedBy = "cart")
-    Order order;
-
     @OneToMany(mappedBy = "cart")
     @Builder.Default
     List<CartItem> cartItems = new ArrayList<>();

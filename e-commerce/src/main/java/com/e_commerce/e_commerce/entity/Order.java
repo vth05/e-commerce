@@ -24,7 +24,6 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
     String userId;
@@ -57,11 +56,12 @@ public class Order {
     @Column(insertable = false)
     LocalDateTime updatedAt;
 
-    @OneToOne()
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
     @JoinColumn(name = "cart_id")
     Cart cart;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "voucher_id")
     Voucher voucher;
 

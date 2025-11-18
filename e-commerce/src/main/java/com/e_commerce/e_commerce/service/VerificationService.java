@@ -27,15 +27,13 @@ public class VerificationService {
     UserRepository userRepository;
 
     public void sendVerificationEmail(User user) {
-        String id = UUID.randomUUID().toString();
         VerificationToken verificationToken = VerificationToken.builder()
-                .id(id)
                 .expiryDate(LocalDateTime.now().plusHours(24))
                 .user(user)
                 .build();
         verificationTokenRepository.save(verificationToken);
 
-        String verificationLink = "http://localhost:8080/verify/email/" + id;
+        String verificationLink = "http://localhost:8080/verify/email/" + user.getId();
         try {
             emailService.sendEmail(user.getEmail(), EmailTemplates.VERIFICATION_EMAIL_SUBJECT, EmailTemplates.buildVerificationEmail(user.getUsername(), verificationLink));
             log.info("Verification email: {}", verificationLink);

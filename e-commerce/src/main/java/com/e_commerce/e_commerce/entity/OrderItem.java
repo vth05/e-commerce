@@ -30,7 +30,7 @@ public class OrderItem {
     @Builder.Default
     boolean active = true;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     Order order;
 }

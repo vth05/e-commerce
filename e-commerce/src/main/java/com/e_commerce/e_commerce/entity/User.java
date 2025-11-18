@@ -33,8 +33,6 @@ public class User {
     boolean active = true;
     boolean emailVerified;
     int tokenVersion;
-    @OneToOne(mappedBy = "user")
-    VerificationToken verificationToken;
     @ManyToMany
     Set<Role> roles;
 }
