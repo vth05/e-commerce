@@ -11,17 +11,22 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.OrderMapper;
 import com.e_commerce.e_commerce.repository.*;
 import com.e_commerce.e_commerce.util.SecurityUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -36,6 +41,11 @@ public class CheckoutService {
     OrderRepository orderRepository;
     OrderMapper orderMapper;
     CartItemRepository cartItemRepository;
+    @NonFinal
+    @Value("${spring.jpa.properties.hibernate.jdbc.batch_size}")
+    int batchSize;
+    @PersistenceContext
+    EntityManager entityManager;
 
     @Transactional
     public OrderResponse checkout(CheckoutRequest request) {
@@ -54,9 +64,18 @@ public class CheckoutService {
 
         // calculate totalPriceOfCart
         BigDecimal totalPriceOfCart = BigDecimal.ZERO;
-        List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
-        for (CartItem cartItem : cartItems) {
-            ProductVariant productVariant = productVariantRepository.findByIdAndActiveTrue(cartItem.getProductVariant().getId()).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
+        List<CartItem> cartItems = cartItemRepository.findAllForCheckout(cart.getId());
+        List<Object> entitiesToDetach = new ArrayList<>();
+        for (int i = 0; i < cartItems.size(); i++) {
+            if (i > 0 && i % batchSize == 0) {
+                entityManager.flush();
+                for (Object object : entitiesToDetach) {
+                    entityManager.detach(object);
+                }
+                entitiesToDetach.clear();
+            }
+            CartItem cartItem = cartItems.get(i);
+            ProductVariant productVariant = cartItem.getProductVariant();
             long quantityOfCartItem = cartItem.getQuantity();
             long quantityOfProductVariant = productVariant.getQuantity();
 
@@ -67,7 +86,7 @@ public class CheckoutService {
 
             // reduce stock
             productVariant.setQuantity(quantityOfProductVariant - quantityOfCartItem);
-            productVariantRepository.save(productVariant);
+            entitiesToDetach.add(productVariant);
 
             // get the newest price
             BigDecimal priceAtPurchase = productVariant.getPrice();
@@ -80,7 +99,8 @@ public class CheckoutService {
                     .quantity(quantityOfCartItem)
                     .order(order)
                     .build();
-            orderItemRepository.save(orderItem);
+            entityManager.persist(orderItem);
+            entitiesToDetach.add(orderItem);
 
             // for response
             order.getOrderItems().add(orderItem);
@@ -134,7 +154,7 @@ public class CheckoutService {
                         .subtract(discount)
                         .setScale(0, RoundingMode.CEILING)
         );
-        return orderMapper.toOrderResponse(orderRepository.save(order));
+        return orderMapper.toOrderResponse(order);
     }
 
     public List<OrderResponse> getOrderHistoryOfCurrentUser(CheckoutStatus checkoutStatus) {

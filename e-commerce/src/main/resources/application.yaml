@@ -17,9 +17,10 @@ spring:
     properties:
       hibernate:
         jdbc:
-          batch_size: 50
+          batch_size: 3
         order_inserts: true
         order_updates: true
+        generate_statistics: true
   data:
     redis:
       host: localhost

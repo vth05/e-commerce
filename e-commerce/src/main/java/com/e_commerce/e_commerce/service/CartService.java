@@ -22,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.stat.Statistics;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -116,24 +118,20 @@ public class CartService {
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
         List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
-//        for (CartItem cartItem : cartItems) {
-//            cartItem.setActive(false);
-//            cartItemRepository.save(cartItem);
-//        }
 
         for (int i = 0; i < cartItems.size(); i++) {
-            CartItem cartItem = cartItems.get(i);
             if (i > 0 && i % batchSize == 0) {
                 entityManager.flush();
-                entityManager.clear();
+                for (int j = i - batchSize; j < i; j++) {
+                    entityManager.detach(cartItems.get(j));
+                }
             }
+            CartItem cartItem = cartItems.get(i);
             cartItem.setActive(false);
-            entityManager.merge(cartItem);
         }
         entityManager.flush();
-        entityManager.clear();
 
-        cart.setUpdatedAt(LocalDateTime.now());
+        cart.setCartStatus(CartStatus.CANCELED);
         cartRepository.save(cart);
     }
 
