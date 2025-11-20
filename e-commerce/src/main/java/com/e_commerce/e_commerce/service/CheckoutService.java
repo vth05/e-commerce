@@ -125,7 +125,6 @@ public class CheckoutService {
 
             // increase usage
             voucher.setUsageCount(voucher.getUsageCount() + 1);
-            voucherRepository.save(voucher);
 
             // one of the two
             if (voucher.getDiscountAmount() != null) {
@@ -139,7 +138,6 @@ public class CheckoutService {
 
         // save cart
         cart.setCartStatus(CartStatus.CHECKED_OUT);
-        cartRepository.save(cart);
 
         // save order
         order.setReceiverName(request.getReceiverName());
