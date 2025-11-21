@@ -1,0 +1,47 @@
+package com.e_commerce.e_commerce.service;
+
+import com.e_commerce.e_commerce.dto.response.RevenueByDate;
+import com.e_commerce.e_commerce.dto.response.RevenueStatsResponse;
+import com.e_commerce.e_commerce.enums.CheckoutStatus;
+import com.e_commerce.e_commerce.enums.ErrorCode;
+import com.e_commerce.e_commerce.exception.AppException;
+import com.e_commerce.e_commerce.repository.OrderRepository;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+public class DashboardService {
+    OrderRepository orderRepository;
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public RevenueStatsResponse getRevenueStats(CheckoutStatus status, LocalDate start, LocalDate end) {
+        if (status == null) status = CheckoutStatus.PAID;
+        if (start == null) start = LocalDate.now().minusDays(30);
+        if (end == null) end = LocalDate.now();
+        if (start.isAfter(end)) {
+            throw new AppException(ErrorCode.INVALID_DATE_RANGE);
+        }
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+        BigDecimal totalRevenue = orderRepository.getTotalRevenue(status, startDateTime, endDateTime);
+        if (totalRevenue == null) {
+            totalRevenue = BigDecimal.ZERO;
+        }
+        List<RevenueByDate> revenueByDates = orderRepository.getRevenueByDate(status, startDateTime, endDateTime);
+        return RevenueStatsResponse.builder()
+                .totalRevenue(totalRevenue)
+                .revenueByDate(revenueByDates)
+                .build();
+    }
+}

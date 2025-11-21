@@ -63,6 +63,8 @@ public enum ErrorCode {
     ORDER_NOT_EXISTED(1046, "Order does not already exist", HttpStatus.NOT_FOUND),
     TOKEN_NOT_FOUND(1047, "Verification token not found", HttpStatus.BAD_REQUEST),
     TOKEN_EXPIRED(1048, "Verification token has expired", HttpStatus.BAD_REQUEST),
+    INVALID_CHECKOUT_STATUS(1049, "Checkout status is invalid", HttpStatus.BAD_REQUEST),
+    INVALID_DATE_RANGE(1050, "Start date must be before or equal to end date", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

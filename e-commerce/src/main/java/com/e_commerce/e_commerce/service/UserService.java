@@ -11,8 +11,8 @@ import com.e_commerce.e_commerce.repository.RoleRepository;
 import com.e_commerce.e_commerce.repository.UserRepository;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.template.EmailTemplates;
+import com.e_commerce.e_commerce.util.ParseUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
-import com.e_commerce.e_commerce.util.UserUtils;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class UserService {
         roleRepository.findById("USER").ifPresent(role -> roles.add(role));
         user.setRoles(roles);
         if (userCreationRequest.getGender() != null) {
-            user.setGender(UserUtils.parseGender(userCreationRequest.getGender()));
+            user.setGender(ParseUtils.parseGender(userCreationRequest.getGender()));
         }
         // catch unique constraint violation
         try {
@@ -106,7 +106,7 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(newPassword));
         }
         if (userUpdateRequest.getGender() != null) {
-            user.setGender(UserUtils.parseGender(userUpdateRequest.getGender()));
+            user.setGender(ParseUtils.parseGender(userUpdateRequest.getGender()));
         }
         try {
             user = userRepository.save(user);

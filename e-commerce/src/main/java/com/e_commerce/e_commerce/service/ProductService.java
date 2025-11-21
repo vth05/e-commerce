@@ -4,11 +4,11 @@ import com.e_commerce.e_commerce.dto.request.ProductCreationRequest;
 import com.e_commerce.e_commerce.dto.request.ProductUpdateRequest;
 import com.e_commerce.e_commerce.dto.response.ProductResponse;
 import com.e_commerce.e_commerce.entity.Product;
-import com.e_commerce.e_commerce.enums.Category;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.ProductMapper;
 import com.e_commerce.e_commerce.repository.ProductRepository;
+import com.e_commerce.e_commerce.util.ParseUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class ProductService {
     @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse createProduct(ProductCreationRequest productCreationRequest) {
         Product product = productMapper.toProduct(productCreationRequest);
-        product.setCategory(parseCategory(productCreationRequest.getCategory()));
+        product.setCategory(ParseUtils.parseCategory(productCreationRequest.getCategory()));
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
@@ -69,7 +69,7 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
         productMapper.updateProduct(product, productUpdateRequest);
         if (productUpdateRequest.getCategory() != null) {
-            product.setCategory(parseCategory(productUpdateRequest.getCategory()));
+            product.setCategory(ParseUtils.parseCategory(productUpdateRequest.getCategory()));
         }
         return productMapper.toProductResponse(productRepository.save(product));
     }
@@ -79,13 +79,5 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
         product.setActive(false);
         return productMapper.toProductResponse(productRepository.save(product));
-    }
-
-    private Category parseCategory(String categoryStr) {
-        try {
-            return Category.valueOf(categoryStr.toUpperCase());
-        } catch (IllegalArgumentException exception) {
-            throw new AppException(ErrorCode.INVALID_CATEGORY);
-        }
     }
 }

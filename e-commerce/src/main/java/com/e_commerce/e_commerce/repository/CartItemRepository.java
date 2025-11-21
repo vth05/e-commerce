@@ -20,7 +20,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, String> {
     @Query("""
             select ci from CartItem ci
             join fetch ci.productVariant pv
-            join fetch pv.product p                
+            join fetch pv.product p
             where ci.cart.id = :cartId and ci.active = true
             """)
     List<CartItem> findAllForCheckout(@Param("cartId") String cartId);
