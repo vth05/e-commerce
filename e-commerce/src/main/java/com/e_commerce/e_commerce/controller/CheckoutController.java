@@ -9,9 +9,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/checkout")
@@ -28,19 +27,29 @@ public class CheckoutController {
     }
 
     @GetMapping("/history")
-    public ApiResponse<List<OrderResponse>> getOrderHistoryOfCurrentUser(@RequestParam(required = false) CheckoutStatus status) {
-        return ApiResponse.<List<OrderResponse>>builder()
-                .result(checkoutService.getOrderHistoryOfCurrentUser(status))
+    public ApiResponse<Page<OrderResponse>> getOrderHistoryOfCurrentUser(
+            @RequestParam(required = false) CheckoutStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir
+    ) {
+        return ApiResponse.<Page<OrderResponse>>builder()
+                .result(checkoutService.getOrderHistoryOfCurrentUser(status, page, size, sortBy, sortDir))
                 .build();
     }
 
     @GetMapping
-    public ApiResponse<List<OrderResponse>> listOrdersForAdmin(
+    public ApiResponse<Page<OrderResponse>> listOrdersForAdmin(
             @RequestParam(required = false) String userId,
-            @RequestParam(required = false) CheckoutStatus status
+            @RequestParam(required = false) CheckoutStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir
     ) {
-        return ApiResponse.<List<OrderResponse>>builder()
-                .result(checkoutService.listOrdersForAdmin(userId, status))
+        return ApiResponse.<Page<OrderResponse>>builder()
+                .result(checkoutService.listOrdersForAdmin(userId, status, page, size, sortBy, sortDir))
                 .build();
     }
 
