@@ -3,11 +3,13 @@ package com.e_commerce.e_commerce.controller;
 import com.e_commerce.e_commerce.dto.response.ApiResponse;
 import com.e_commerce.e_commerce.dto.response.ProductRevenueResponse;
 import com.e_commerce.e_commerce.dto.response.RevenueStatsResponse;
+import com.e_commerce.e_commerce.dto.response.TopProductResponse;
 import com.e_commerce.e_commerce.enums.CheckoutStatus;
 import com.e_commerce.e_commerce.service.DashboardService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +26,7 @@ import java.util.List;
 public class DashboardController {
     DashboardService dashboardService;
 
-    @GetMapping("/revenue")
+    @GetMapping("/revenue/daily")
     ApiResponse<RevenueStatsResponse> getRevenueStats(
             @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -42,6 +44,17 @@ public class DashboardController {
     ) {
         return ApiResponse.<List<ProductRevenueResponse>>builder()
                 .result(dashboardService.getRevenueByProduct(start, end))
+                .build();
+    }
+
+    @GetMapping("/revenue/products/top-revenue")
+    ApiResponse<Page<TopProductResponse>> getTopProductsByRevenue(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(defaultValue = "5") int limit
+    ) {
+        return ApiResponse.<Page<TopProductResponse>>builder()
+                .result(dashboardService.getTopProductsByRevenue(start, end, limit))
                 .build();
     }
 }
