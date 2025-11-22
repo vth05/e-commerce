@@ -28,7 +28,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     Optional<Order> findByIdAndUserId(String orderId, String userId);
 
     @Query("""
-            select sum(o.totalPrice) from Order o
+            select sum(o.totalPrice)
+            from Order o
             where o.checkoutStatus = :status and o.createdAt >= :start and o.createdAt <= :end
             """)
     BigDecimal findTotalRevenueByDateRangeAndStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
