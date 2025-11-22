@@ -21,7 +21,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
             where oi.createdAt >= :start and oi.createdAt <= :end
             group by oi.productName
             """)
-    List<ProductRevenueResponse> findRevenueByProduct(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    List<ProductRevenueResponse> findRevenueByProductAndDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("""
             select new com.e_commerce.e_commerce.dto.response.TopProductResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))

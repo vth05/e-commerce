@@ -38,23 +38,23 @@ public class DashboardController {
     }
 
     @GetMapping("/revenue/products")
-    ApiResponse<List<ProductRevenueResponse>> getRevenueByProduct(
+    ApiResponse<List<ProductRevenueResponse>> getRevenueByProductAndDateRange(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
         return ApiResponse.<List<ProductRevenueResponse>>builder()
-                .result(dashboardService.getRevenueByProduct(start, end))
+                .result(dashboardService.getRevenueByProductAndDateRange(start, end))
                 .build();
     }
 
     @GetMapping("/revenue/products/top-revenue")
-    ApiResponse<Page<TopProductResponse>> getTopProductsByRevenue(
+    ApiResponse<Page<TopProductResponse>> getTopProductsByRevenueAndDateRange(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "5") int limit
     ) {
         return ApiResponse.<Page<TopProductResponse>>builder()
-                .result(dashboardService.getTopProductsByRevenue(start, end, limit))
+                .result(dashboardService.getTopProductsByRevenueAndDateRange(start, end, limit))
                 .build();
     }
 }

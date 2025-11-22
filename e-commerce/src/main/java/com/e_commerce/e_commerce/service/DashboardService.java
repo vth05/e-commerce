@@ -53,7 +53,7 @@ public class DashboardService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public List<ProductRevenueResponse> getRevenueByProduct(LocalDate start, LocalDate end) {
+    public List<ProductRevenueResponse> getRevenueByProductAndDateRange(LocalDate start, LocalDate end) {
         if (start == null) start = LocalDate.now().minusDays(30);
         if (end == null) end = LocalDate.now();
         if (start.isAfter(end)) {
@@ -61,11 +61,11 @@ public class DashboardService {
         }
         LocalDateTime startDateTime = start.atStartOfDay();
         LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
-        return orderItemRepository.findRevenueByProduct(startDateTime, endDateTime);
+        return orderItemRepository.findRevenueByProductAndDateRange(startDateTime, endDateTime);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<TopProductResponse> getTopProductsByRevenue(LocalDate start, LocalDate end, int limit) {
+    public Page<TopProductResponse> getTopProductsByRevenueAndDateRange(LocalDate start, LocalDate end, int limit) {
         if (limit > 50) limit = 50;
         if (start == null) start = LocalDate.now().minusDays(30);
         if (end == null) end = LocalDate.now();
