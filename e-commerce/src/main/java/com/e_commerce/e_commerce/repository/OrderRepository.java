@@ -31,7 +31,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             select sum(o.totalPrice) from Order o
             where o.checkoutStatus = :status and o.createdAt >= :start and o.createdAt <= :end
             """)
-    BigDecimal getTotalRevenue(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    BigDecimal findTotalRevenueByDateRangeAndStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("""
             select new com.e_commerce.e_commerce.dto.response.RevenueByDate(cast(o.createdAt as LocalDate), sum(o.totalPrice))
@@ -40,5 +40,5 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             group by function('DATE', o.createdAt)
             order by function('DATE', o.createdAt)
             """)
-    List<RevenueByDate> getRevenueByDate(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    List<RevenueByDate> findDailyRevenueByDateRangeAndStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

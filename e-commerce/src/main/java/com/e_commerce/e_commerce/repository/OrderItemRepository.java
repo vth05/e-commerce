@@ -1,9 +1,22 @@
 package com.e_commerce.e_commerce.repository;
 
+import com.e_commerce.e_commerce.dto.response.ProductRevenueResponse;
 import com.e_commerce.e_commerce.entity.OrderItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
+    @Query("""
+            select new com.e_commerce.e_commerce.dto.response.ProductRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))
+            from OrderItem oi
+            where oi.createdAt >= :start and oi.createdAt <= :end
+            group by oi.productName
+            """)
+    List<ProductRevenueResponse> findRevenueByProduct(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
