@@ -1,7 +1,8 @@
 package com.e_commerce.e_commerce.repository;
 
 import com.e_commerce.e_commerce.dto.response.ProductRevenueResponse;
-import com.e_commerce.e_commerce.dto.response.TopProductResponse;
+import com.e_commerce.e_commerce.dto.response.TopProductsByQuantitySoldResponse;
+import com.e_commerce.e_commerce.dto.response.TopProductsByRevenueResponse;
 import com.e_commerce.e_commerce.entity.OrderItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +25,20 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
     List<ProductRevenueResponse> findRevenueByProductAndDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("""
-            select new com.e_commerce.e_commerce.dto.response.TopProductResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))
+            select new com.e_commerce.e_commerce.dto.response.TopProductsByRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))
             from OrderItem oi
             where oi.createdAt >= :start and oi.createdAt <= :end
             group by oi.productName
             order by sum(oi.priceAtPurchase * oi.quantity) desc
             """)
-    Page<TopProductResponse> findTopProductsByRevenueAndDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
+    Page<TopProductsByRevenueResponse> findTopProductsByRevenueAndDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
+
+    @Query("""
+            select new com.e_commerce.e_commerce.dto.response.TopProductsByQuantitySoldResponse(oi.productName, sum(oi.quantity))
+            from OrderItem oi
+            where oi.createdAt >= :start and oi.createdAt <= :end
+            group by oi.productName
+            order by sum(oi.quantity) desc
+            """)
+    Page<TopProductsByQuantitySoldResponse> findTopProductsByQuantitySoldAndDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
 }

@@ -1,9 +1,6 @@
 package com.e_commerce.e_commerce.controller;
 
-import com.e_commerce.e_commerce.dto.response.ApiResponse;
-import com.e_commerce.e_commerce.dto.response.ProductRevenueResponse;
-import com.e_commerce.e_commerce.dto.response.RevenueStatsResponse;
-import com.e_commerce.e_commerce.dto.response.TopProductResponse;
+import com.e_commerce.e_commerce.dto.response.*;
 import com.e_commerce.e_commerce.enums.CheckoutStatus;
 import com.e_commerce.e_commerce.service.DashboardService;
 import lombok.AccessLevel;
@@ -48,13 +45,24 @@ public class DashboardController {
     }
 
     @GetMapping("/revenue/products/top-revenue")
-    ApiResponse<Page<TopProductResponse>> getTopProductsByRevenueAndDateRange(
+    ApiResponse<Page<TopProductsByRevenueResponse>> getTopProductsByRevenueAndDateRange(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "5") int limit
     ) {
-        return ApiResponse.<Page<TopProductResponse>>builder()
+        return ApiResponse.<Page<TopProductsByRevenueResponse>>builder()
                 .result(dashboardService.getTopProductsByRevenueAndDateRange(start, end, limit))
+                .build();
+    }
+
+    @GetMapping("/revenue/products/top-quantity-sold")
+    ApiResponse<Page<TopProductsByQuantitySoldResponse>> getTopProductsByQuantitySoldAndDateRange(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(defaultValue = "5") int limit
+    ) {
+        return ApiResponse.<Page<TopProductsByQuantitySoldResponse>>builder()
+                .result(dashboardService.getTopProductsByQuantitySoldAndDateRange(start, end, limit))
                 .build();
     }
 }

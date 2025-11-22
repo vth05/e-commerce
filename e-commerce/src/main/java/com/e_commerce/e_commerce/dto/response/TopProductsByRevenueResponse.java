@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TopProductResponse {
+public class TopProductsByRevenueResponse {
     String productName;
     BigDecimal revenue;
 }

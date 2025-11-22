@@ -1,9 +1,6 @@
 package com.e_commerce.e_commerce.service;
 
-import com.e_commerce.e_commerce.dto.response.ProductRevenueResponse;
-import com.e_commerce.e_commerce.dto.response.RevenueByDate;
-import com.e_commerce.e_commerce.dto.response.RevenueStatsResponse;
-import com.e_commerce.e_commerce.dto.response.TopProductResponse;
+import com.e_commerce.e_commerce.dto.response.*;
 import com.e_commerce.e_commerce.enums.CheckoutStatus;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.exception.AppException;
@@ -65,7 +62,7 @@ public class DashboardService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<TopProductResponse> getTopProductsByRevenueAndDateRange(LocalDate start, LocalDate end, int limit) {
+    public Page<TopProductsByRevenueResponse> getTopProductsByRevenueAndDateRange(LocalDate start, LocalDate end, int limit) {
         if (limit > 50) limit = 50;
         if (start == null) start = LocalDate.now().minusDays(30);
         if (end == null) end = LocalDate.now();
@@ -76,5 +73,19 @@ public class DashboardService {
         LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
         Pageable pageable = PageRequest.of(0, limit);
         return orderItemRepository.findTopProductsByRevenueAndDateRange(startDateTime, endDateTime, pageable);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<TopProductsByQuantitySoldResponse> getTopProductsByQuantitySoldAndDateRange(LocalDate start, LocalDate end, int limit) {
+        if (limit > 50) limit = 50;
+        if (start == null) start = LocalDate.now().minusDays(30);
+        if (end == null) end = LocalDate.now();
+        if (start.isAfter(end)) {
+            throw new AppException(ErrorCode.INVALID_DATE_RANGE);
+        }
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+        Pageable pageable = PageRequest.of(0, limit);
+        return orderItemRepository.findTopProductsByQuantitySoldAndDateRange(startDateTime, endDateTime, pageable);
     }
 }
