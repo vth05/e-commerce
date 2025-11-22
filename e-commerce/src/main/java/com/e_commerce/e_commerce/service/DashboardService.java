@@ -32,7 +32,7 @@ public class DashboardService {
     OrderItemRepository orderItemRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
-    public RevenueStatsResponse getRevenueStats(CheckoutStatus status, LocalDate start, LocalDate end) {
+    public RevenueStatsResponse getDailyRevenue(CheckoutStatus status, LocalDate start, LocalDate end) {
         if (status == null) status = CheckoutStatus.PAID;
         if (start == null) start = LocalDate.now().minusDays(30);
         if (end == null) end = LocalDate.now();
