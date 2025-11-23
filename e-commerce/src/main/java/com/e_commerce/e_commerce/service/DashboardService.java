@@ -31,13 +31,9 @@ public class DashboardService {
     @PreAuthorize("hasRole('ADMIN')")
     public RevenueStatsResponse getDailyRevenue(CheckoutStatus status, LocalDate start, LocalDate end) {
         if (status == null) status = CheckoutStatus.PAID;
-        if (start == null) start = LocalDate.now().minusDays(30);
-        if (end == null) end = LocalDate.now();
-        if (start.isAfter(end)) {
-            throw new AppException(ErrorCode.INVALID_DATE_RANGE);
-        }
-        LocalDateTime startDateTime = start.atStartOfDay();
-        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+        DateRange dateRange = normalizeDateRange(start, end);
+        LocalDateTime startDateTime = dateRange.start;
+        LocalDateTime endDateTime = dateRange.end;
         BigDecimal totalRevenue = orderRepository.findTotalRevenueByDateRangeAndStatus(status, startDateTime, endDateTime);
         if (totalRevenue == null) {
             totalRevenue = BigDecimal.ZERO;
@@ -51,26 +47,18 @@ public class DashboardService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<ProductRevenueResponse> getRevenueByProductAndDateRange(LocalDate start, LocalDate end) {
-        if (start == null) start = LocalDate.now().minusDays(30);
-        if (end == null) end = LocalDate.now();
-        if (start.isAfter(end)) {
-            throw new AppException(ErrorCode.INVALID_DATE_RANGE);
-        }
-        LocalDateTime startDateTime = start.atStartOfDay();
-        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+        DateRange dateRange = normalizeDateRange(start, end);
+        LocalDateTime startDateTime = dateRange.start;
+        LocalDateTime endDateTime = dateRange.end;
         return orderItemRepository.findRevenueByProductAndDateRange(startDateTime, endDateTime);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public Page<TopProductsByRevenueResponse> getTopProductsByRevenueAndDateRange(LocalDate start, LocalDate end, int limit) {
         if (limit > 50) limit = 50;
-        if (start == null) start = LocalDate.now().minusDays(30);
-        if (end == null) end = LocalDate.now();
-        if (start.isAfter(end)) {
-            throw new AppException(ErrorCode.INVALID_DATE_RANGE);
-        }
-        LocalDateTime startDateTime = start.atStartOfDay();
-        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
+        DateRange dateRange = normalizeDateRange(start, end);
+        LocalDateTime startDateTime = dateRange.start;
+        LocalDateTime endDateTime = dateRange.end;
         Pageable pageable = PageRequest.of(0, limit);
         return orderItemRepository.findTopProductsByRevenueAndDateRange(startDateTime, endDateTime, pageable);
     }
@@ -78,14 +66,22 @@ public class DashboardService {
     @PreAuthorize("hasRole('ADMIN')")
     public Page<TopProductsByQuantitySoldResponse> getTopProductsByQuantitySoldAndDateRange(LocalDate start, LocalDate end, int limit) {
         if (limit > 50) limit = 50;
+        DateRange dateRange = normalizeDateRange(start, end);
+        LocalDateTime startDateTime = dateRange.start;
+        LocalDateTime endDateTime = dateRange.end;
+        Pageable pageable = PageRequest.of(0, limit);
+        return orderItemRepository.findTopProductsByQuantitySoldAndDateRange(startDateTime, endDateTime, pageable);
+    }
+
+    private DateRange normalizeDateRange(LocalDate start, LocalDate end) {
         if (start == null) start = LocalDate.now().minusDays(30);
         if (end == null) end = LocalDate.now();
         if (start.isAfter(end)) {
             throw new AppException(ErrorCode.INVALID_DATE_RANGE);
         }
-        LocalDateTime startDateTime = start.atStartOfDay();
-        LocalDateTime endDateTime = end.atTime(LocalTime.MAX);
-        Pageable pageable = PageRequest.of(0, limit);
-        return orderItemRepository.findTopProductsByQuantitySoldAndDateRange(startDateTime, endDateTime, pageable);
+        return new DateRange(start.atStartOfDay(), end.atTime(LocalTime.MAX));
+    }
+
+    private record DateRange(LocalDateTime start, LocalDateTime end) {
     }
 }
