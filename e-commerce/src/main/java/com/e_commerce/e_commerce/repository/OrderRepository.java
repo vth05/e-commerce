@@ -1,6 +1,7 @@
 package com.e_commerce.e_commerce.repository;
 
 import com.e_commerce.e_commerce.dto.response.RevenueByDate;
+import com.e_commerce.e_commerce.dto.response.TopCustomersResponse;
 import com.e_commerce.e_commerce.entity.Order;
 import com.e_commerce.e_commerce.enums.CheckoutStatus;
 import org.springframework.data.domain.Page;
@@ -32,7 +33,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             from Order o
             where o.checkoutStatus = :status and o.createdAt >= :start and o.createdAt <= :end
             """)
-    BigDecimal findTotalRevenueByDateRangeAndStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    BigDecimal findTotalRevenueByDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("""
             select new com.e_commerce.e_commerce.dto.response.RevenueByDate(cast(o.createdAt as LocalDate), sum(o.totalPrice))
@@ -41,5 +42,21 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             group by function('DATE', o.createdAt)
             order by function('DATE', o.createdAt)
             """)
-    List<RevenueByDate> findDailyRevenueByDateRangeAndStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    List<RevenueByDate> findDailyRevenueByDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query(value = """
+            select u.id, concat(u.first_name, ' ', u.last_name) as full_name, u.email, u.phone_number, sum(o.total_price) as total_spent, count(*) as total_orders
+            from orders o
+            join user u on o.user_id = u.id
+            where u.active = :active and o.created_at between :start and :end
+            group by u.id, concat(u.first_name, ' ', u.last_name), u.email, u.phone_number
+            order by total_spent desc
+            limit :limit
+            """, nativeQuery = true)
+    List<Object[]> findTopCustomersByDateRangeAndUserStatus(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("active") boolean active,
+            @Param("limit") int limit
+    );
 }

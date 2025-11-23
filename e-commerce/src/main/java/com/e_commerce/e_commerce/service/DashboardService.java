@@ -34,11 +34,11 @@ public class DashboardService {
         DateRange dateRange = normalizeDateRange(start, end);
         LocalDateTime startDateTime = dateRange.start;
         LocalDateTime endDateTime = dateRange.end;
-        BigDecimal totalRevenue = orderRepository.findTotalRevenueByDateRangeAndStatus(status, startDateTime, endDateTime);
+        BigDecimal totalRevenue = orderRepository.findTotalRevenueByDateRangeAndCheckoutStatus(status, startDateTime, endDateTime);
         if (totalRevenue == null) {
             totalRevenue = BigDecimal.ZERO;
         }
-        List<RevenueByDate> revenueByDates = orderRepository.findDailyRevenueByDateRangeAndStatus(status, startDateTime, endDateTime);
+        List<RevenueByDate> revenueByDates = orderRepository.findDailyRevenueByDateRangeAndCheckoutStatus(status, startDateTime, endDateTime);
         return RevenueStatsResponse.builder()
                 .totalRevenue(totalRevenue)
                 .revenueByDate(revenueByDates)
@@ -71,6 +71,24 @@ public class DashboardService {
         LocalDateTime endDateTime = dateRange.end;
         Pageable pageable = PageRequest.of(0, limit);
         return orderItemRepository.findTopProductsByQuantitySoldAndDateRange(startDateTime, endDateTime, pageable);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<TopCustomersResponse> getTopCustomersByDateRangeAndUserStatus(LocalDate start, LocalDate end, boolean active, int limit) {
+        if (limit > 50) limit = 50;
+        DateRange dateRange = normalizeDateRange(start, end);
+        LocalDateTime startDateTime = dateRange.start;
+        LocalDateTime endDateTime = dateRange.end;
+        List<Object[]> rows = orderRepository.findTopCustomersByDateRangeAndUserStatus(startDateTime, endDateTime, active, limit);
+        List<TopCustomersResponse> topCustomersResponses = rows.stream().map(row -> new TopCustomersResponse(
+                String.valueOf(row[0]),
+                String.valueOf(row[1]),
+                String.valueOf(row[2]),
+                String.valueOf(row[3]),
+                (BigDecimal) row[4],
+                (Long) row[5]
+        )).toList();
+        return topCustomersResponses;
     }
 
     private DateRange normalizeDateRange(LocalDate start, LocalDate end) {

@@ -65,4 +65,16 @@ public class DashboardController {
                 .result(dashboardService.getTopProductsByQuantitySoldAndDateRange(start, end, limit))
                 .build();
     }
+
+    @GetMapping("/revenue/users/top-revenue")
+    ApiResponse<List<TopCustomersResponse>> getTopCustomersByDateRangeAndUserStatus(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(defaultValue = "true") boolean active,
+            @RequestParam(defaultValue = "5") int limit
+    ) {
+        return ApiResponse.<List<TopCustomersResponse>>builder()
+                .result(dashboardService.getTopCustomersByDateRangeAndUserStatus(start, end, active, limit))
+                .build();
+    }
 }
