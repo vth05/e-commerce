@@ -41,4 +41,29 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
             order by sum(oi.quantity) desc
             """)
     Page<TopProductsByQuantitySoldResponse> findTopProductsByQuantitySoldAndDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
+
+    @Query(value = """
+            select oi.product_id,
+                   oi.product_name,
+                   pv.displayPrice,
+                   pv.stockQuantity,
+                   sum(oi.quantity) as quantitySold
+            from order_item oi
+            join (
+                select product_id,
+                       min(price) as displayPrice,
+                       sum(quantity) as stockQuantity
+                from product_variant
+                group by product_id
+            ) pv on oi.product_id = pv.product_id
+            where oi.created_at >= :start and oi.created_at <= :end
+            group by oi.product_id, oi.product_name, pv.displayPrice, pv.stockQuantity
+            order by quantitySold desc
+            limit :limit
+            """, nativeQuery = true)
+    List<Object[]> findTopSellingProductsForRecommendationByQuantitySoldAndDateRange(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("limit") int limit
+    );
 }
