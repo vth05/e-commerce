@@ -1,5 +1,6 @@
 package com.e_commerce.e_commerce.entity;
 
+import com.e_commerce.e_commerce.enums.Category;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,6 +35,9 @@ public class Voucher {
     String description;
 
     Integer usageLimit;
+
+    @Enumerated(EnumType.STRING)
+    Category category;
 
     @Builder.Default
     Integer usageCount = 0;

@@ -65,6 +65,14 @@ public enum ErrorCode {
     TOKEN_EXPIRED(1048, "Verification token has expired", HttpStatus.BAD_REQUEST),
     INVALID_CHECKOUT_STATUS(1049, "Checkout status is invalid", HttpStatus.BAD_REQUEST),
     INVALID_DATE_RANGE(1050, "Start date must be before or equal to end date", HttpStatus.BAD_REQUEST),
+    VOUCHER_CODE_REQUIRED(1051, "Voucher code is required", HttpStatus.BAD_REQUEST),
+    VOUCHER_VALID_FROM_REQUIRED(1052, "Voucher valid from is required", HttpStatus.BAD_REQUEST),
+    VOUCHER_VALID_TO_REQUIRED(1053, "Voucher valid to is required", HttpStatus.BAD_REQUEST),
+    VOUCHER_USAGE_LIMIT_REQUIRED(1054, "Voucher usage limit is required", HttpStatus.BAD_REQUEST),
+    VOUCHER_CATEGORY_REQUIRED(1055, "Voucher category is required", HttpStatus.BAD_REQUEST),
+    VOUCHER_DISCOUNT_AMOUNT_INVALID(1056, "Voucher discount amount must be at least 1", HttpStatus.BAD_REQUEST),
+    VOUCHER_DISCOUNT_PERCENT_INVALID(1057, "Voucher discount percent must be between 1 and 100", HttpStatus.BAD_REQUEST),
+    VOUCHER_USAGE_LIMIT_INVALID(1058, "Voucher usage limit must be at least 1", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

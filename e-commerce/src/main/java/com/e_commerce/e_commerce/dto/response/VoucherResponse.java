@@ -28,6 +28,8 @@ public class VoucherResponse {
 
     Integer usageLimit;
 
+    String category;
+
     Integer usageCount;
 
     boolean active;

@@ -154,7 +154,7 @@ public class CheckoutService {
         order.setTotalPrice(totalPriceOfCart
 //                .add(order.getShippingFee())
                         .subtract(discount)
-                        .setScale(0, RoundingMode.CEILING)
+                        .setScale(2, RoundingMode.HALF_UP)
         );
         return orderMapper.toOrderResponse(order);
     }
