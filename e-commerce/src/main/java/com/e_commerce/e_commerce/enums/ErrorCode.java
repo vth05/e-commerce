@@ -73,6 +73,9 @@ public enum ErrorCode {
     VOUCHER_DISCOUNT_AMOUNT_INVALID(1056, "Voucher discount amount must be at least 1", HttpStatus.BAD_REQUEST),
     VOUCHER_DISCOUNT_PERCENT_INVALID(1057, "Voucher discount percent must be between 1 and 100", HttpStatus.BAD_REQUEST),
     VOUCHER_USAGE_LIMIT_INVALID(1058, "Voucher usage limit must be at least 1", HttpStatus.BAD_REQUEST),
+    VOUCHER_USAGE_COUNT_INVALID(1059, "Voucher usage count must be at least 0", HttpStatus.BAD_REQUEST),
+    VOUCHER_VALID_FROM_INVALID(1060, "Voucher valid from must be in the present or future", HttpStatus.BAD_REQUEST),
+    VOUCHER_VALID_TO_INVALID(1061, "Voucher valid to must be in the future", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

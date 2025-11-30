@@ -24,9 +24,11 @@ public class VoucherCreationRequest {
     BigDecimal discountPercent;
 
     @NotNull(message = "VOUCHER_VALID_FROM_REQUIRED")
+    @FutureOrPresent(message = "VOUCHER_VALID_FROM_INVALID")
     LocalDateTime validFrom;
 
     @NotNull(message = "VOUCHER_VALID_TO_REQUIRED")
+    @Future(message = "VOUCHER_VALID_TO_INVALID")
     LocalDateTime validTo;
 
     String description;

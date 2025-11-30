@@ -22,8 +22,10 @@ public class VoucherUpdateRequest {
     @DecimalMax(value = "100.0", message = "VOUCHER_DISCOUNT_PERCENT_INVALID")
     BigDecimal discountPercent;
 
+    @FutureOrPresent(message = "VOUCHER_VALID_FROM_INVALID")
     LocalDateTime validFrom;
 
+    @Future(message = "VOUCHER_VALID_TO_INVALID")
     LocalDateTime validTo;
 
     String description;
@@ -32,4 +34,9 @@ public class VoucherUpdateRequest {
     Integer usageLimit;
 
     String category;
+
+    @Min(value = 0, message = "VOUCHER_USAGE_COUNT_INVALID")
+    Integer usageCount;
+
+    Boolean active;
 }
