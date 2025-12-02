@@ -51,7 +51,12 @@ public class VoucherService {
     @PreAuthorize("hasRole('ADMIN')")
     public VoucherResponse updateVoucher(String voucherCode, VoucherUpdateRequest request) {
         Voucher voucher = voucherRepository.findByCode(voucherCode).orElseThrow(() -> new AppException(ErrorCode.VOUCHER_CODE_NOT_EXISTED));
+        if (request.getDiscountAmount() != null && request.getDiscountPercent() != null) {
+            throw new AppException(ErrorCode.VOUCHER_DISCOUNT_BOTH_PRESENT);
+        }
         voucherMapper.updateVoucher(voucher, request);
+        voucher.setDiscountAmount(request.getDiscountAmount());
+        voucher.setDiscountPercent(request.getDiscountPercent());
         if (request.getCategory() != null) {
             voucher.setCategory(ParseUtils.parseCategory(request.getCategory()));
         }

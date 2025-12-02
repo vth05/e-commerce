@@ -24,9 +24,9 @@ public class Voucher {
 
     String code;
 
-    BigDecimal discountAmount;
+    Integer discountAmount;
 
-    BigDecimal discountPercent;
+    Integer discountPercent;
 
     LocalDateTime validFrom;
 

@@ -16,5 +16,7 @@ public interface VoucherMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "category", ignore = true)
+    @Mapping(target = "discountAmount", ignore = true)
+    @Mapping(target = "discountPercent", ignore = true)
     void updateVoucher(@MappingTarget Voucher voucher, VoucherUpdateRequest request);
 }

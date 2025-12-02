@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -60,17 +63,47 @@ public class GlobalHandlerException {
                 .build());
     }
 
+//    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+//    ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException methodArgumentNotValidException) {
+//        String enumKey = methodArgumentNotValidException.getFieldError().getDefaultMessage();
+//        ErrorCode errorCode = ErrorCode.KEY_INVALID;
+//        Map<String, Object> attributes = null;
+//        ApiResponse<Void> apiResponse = new ApiResponse<>();
+//        try {
+//            errorCode = ErrorCode.valueOf(enumKey);
+//            ConstraintViolation constraintViolation = methodArgumentNotValidException.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
+//            attributes = constraintViolation.getConstraintDescriptor().getAttributes();
+//        } catch (IllegalArgumentException e) {
+//        }
+//        if (Objects.nonNull(attributes)) {
+//            apiResponse.setMessage(mapAttribute(errorCode.getMessage(), attributes));
+//        }
+//        apiResponse.setCode(errorCode.getCode());
+//        return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
+//    }
+
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException methodArgumentNotValidException) {
-        String enumKey = methodArgumentNotValidException.getFieldError().getDefaultMessage();
+        String enumKey = null;
         ErrorCode errorCode = ErrorCode.KEY_INVALID;
         Map<String, Object> attributes = null;
         ApiResponse<Void> apiResponse = new ApiResponse<>();
+        BindingResult bindingResult = methodArgumentNotValidException.getBindingResult();
+        if (bindingResult.hasFieldErrors()) {
+            enumKey = bindingResult.getFieldError().getDefaultMessage();
+        } else if (bindingResult.hasGlobalErrors()) {
+            log.info("global error found");
+            enumKey = bindingResult.getGlobalError().getDefaultMessage();
+            log.info("global error message: {}", enumKey);
+        }
         try {
             errorCode = ErrorCode.valueOf(enumKey);
-            ConstraintViolation constraintViolation = methodArgumentNotValidException.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
+            ConstraintViolation constraintViolation = bindingResult.getAllErrors().getFirst().unwrap(ConstraintViolation.class);
             attributes = constraintViolation.getConstraintDescriptor().getAttributes();
         } catch (IllegalArgumentException e) {
+            log.info("global error found");
+            apiResponse.setMessage(enumKey);
+            log.info("api response message: {}", apiResponse.getMessage());
         }
         if (Objects.nonNull(attributes)) {
             apiResponse.setMessage(mapAttribute(errorCode.getMessage(), attributes));

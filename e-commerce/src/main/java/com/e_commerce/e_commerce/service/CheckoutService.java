@@ -132,9 +132,9 @@ public class CheckoutService {
 
             // one of the two
             if (voucher.getDiscountAmount() != null) {
-                discount = discount.add(voucher.getDiscountAmount());
+                discount = discount.add(BigDecimal.valueOf(voucher.getDiscountAmount()));
             } else if (voucher.getDiscountPercent() != null) {
-                discount = discount.add(totalPriceOfCart.multiply(voucher.getDiscountPercent().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)));
+                discount = discount.add(totalPriceOfCart.multiply(BigDecimal.valueOf(voucher.getDiscountPercent()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)));
             }
 
             order.setVoucher(voucher);
