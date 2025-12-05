@@ -4,6 +4,7 @@ import com.e_commerce.e_commerce.configuration.CustomUserDetails;
 import com.e_commerce.e_commerce.entity.User;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,6 +26,8 @@ import java.util.Collection;
 public class CustomUserDetailsService implements UserDetailsService {
     UserRepository userRepository;
 
+    // failed to lazily initialize a collection of role: com.e_commerce.e_commerce.entity.User.roles: could not initialize proxy - no Session, so I use Transactional
+    @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));

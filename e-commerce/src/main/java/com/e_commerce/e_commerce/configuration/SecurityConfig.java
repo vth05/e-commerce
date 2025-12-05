@@ -27,6 +27,7 @@ public class SecurityConfig {
             "/auth/refresh-token",
             "/users",
             "/verify/email/**",
+            "/payment/**",
     };
     CustomJwtDecoder customJwtDecoder;
 

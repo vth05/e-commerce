@@ -61,7 +61,7 @@ public class CheckoutService {
         Order order = Order.builder()
                 .cart(cart)
                 .userId(userId)
-                .checkoutStatus(CheckoutStatus.PAID)
+                .checkoutStatus(CheckoutStatus.PENDING)
                 .build();
         // create orderId (= cartId)
         order = orderRepository.save(order);

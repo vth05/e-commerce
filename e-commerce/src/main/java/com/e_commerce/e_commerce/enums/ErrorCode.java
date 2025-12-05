@@ -77,6 +77,8 @@ public enum ErrorCode {
     VOUCHER_VALID_FROM_INVALID(1060, "Voucher valid from must be in the present or future", HttpStatus.BAD_REQUEST),
     VOUCHER_VALID_TO_INVALID(1061, "Voucher valid to must be in the future", HttpStatus.BAD_REQUEST),
     VOUCHER_DISCOUNT_BOTH_PRESENT(1062, "Only one of discount amount or discount percent should be provided", HttpStatus.BAD_REQUEST),
+    VNPAY_AMOUNT_NOT_MATCH(1063, "VNPAY amount does not match order amount", HttpStatus.BAD_REQUEST),
+    VNPAY_STATUS_NOT_MATCH(1064, "VNPAY status does not match order status", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
