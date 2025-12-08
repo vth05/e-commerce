@@ -1,8 +1,7 @@
 package com.e_commerce.e_commerce.controller;
 
-import com.e_commerce.e_commerce.dto.request.UserUpdateRequest;
+import com.e_commerce.e_commerce.dto.request.*;
 import com.e_commerce.e_commerce.service.UserService;
-import com.e_commerce.e_commerce.dto.request.UserCreationRequest;
 import com.e_commerce.e_commerce.dto.response.ApiResponse;
 import com.e_commerce.e_commerce.dto.response.UserResponse;
 import jakarta.validation.Valid;
@@ -51,6 +50,27 @@ public class UserController {
     ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody @Valid UserUpdateRequest userUpdateRequest) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUser(userId, userUpdateRequest))
+                .build();
+    }
+
+    @PutMapping("/change-password")
+    ApiResponse<String> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        return ApiResponse.<String>builder()
+                .result(userService.changePassword(request))
+                .build();
+    }
+
+    @PostMapping("/email-change-request")
+    ApiResponse<String> requestEmailChange(@RequestBody @Valid RequestChangeEmailOtpRequest request) {
+        return ApiResponse.<String>builder()
+                .result(userService.requestEmailChange(request))
+                .build();
+    }
+
+    @PutMapping("/change-email")
+    ApiResponse<String> changeEmail(@RequestBody @Valid ChangeEmailRequest request) {
+        return ApiResponse.<String>builder()
+                .result(userService.changeEmail(request))
                 .build();
     }
 

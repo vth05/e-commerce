@@ -17,12 +17,8 @@ public class UserUpdateRequest {
     String username;
     String firstName;
     String lastName;
-    @Size(min = 6, message = "PASSWORD_INVALID")
-    String password;
     String phoneNumber;
     String address;
-    @Email(message = "EMAIL_INVALID", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
-    String email;
     String gender;
     LocalDate dob;
     Boolean active;
@@ -40,20 +36,12 @@ public class UserUpdateRequest {
         this.lastName = lastName == null ? null : lastName.trim();
     }
 
-    public void setPassword(String password) {
-        this.password = password == null ? null : password.trim();
-    }
-
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber == null ? null : phoneNumber.trim();
     }
 
     public void setAddress(String address) {
         this.address = address == null ? null : address.trim();
-    }
-
-    public void setEmail(String email) {
-        this.email = email == null ? null : email.trim();
     }
 
     public void setGender(String gender) {

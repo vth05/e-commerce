@@ -79,6 +79,13 @@ public enum ErrorCode {
     VOUCHER_DISCOUNT_BOTH_PRESENT(1062, "Only one of discount amount or discount percent should be provided", HttpStatus.BAD_REQUEST),
     VNPAY_AMOUNT_NOT_MATCH(1063, "VNPAY amount does not match order amount", HttpStatus.BAD_REQUEST),
     VNPAY_STATUS_NOT_MATCH(1064, "VNPAY status does not match order status", HttpStatus.BAD_REQUEST),
+    WRONG_PASSWORD(1065, "The old password is incorrect", HttpStatus.BAD_REQUEST),
+    OLD_PASSWORD_REQUIRED(1066, "Old password is required", HttpStatus.BAD_REQUEST),
+    NEW_PASSWORD_REQUIRED(1067, "New password is required", HttpStatus.BAD_REQUEST),
+    OTP_INVALID(1068, "OTP is invalid", HttpStatus.BAD_REQUEST),
+    OTP_REQUIRED(1069, "OTP is required", HttpStatus.BAD_REQUEST),
+    EMAIL_ALREADY_IN_USE(1070, "Email is already in use", HttpStatus.CONFLICT),
+    EMAIL_SAME_AS_OLD(1071, "New email must be different from old email", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

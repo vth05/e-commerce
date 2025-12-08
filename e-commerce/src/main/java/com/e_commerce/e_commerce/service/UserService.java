@@ -1,9 +1,8 @@
 package com.e_commerce.e_commerce.service;
 
-import com.e_commerce.e_commerce.dto.request.UserUpdateRequest;
+import com.e_commerce.e_commerce.dto.request.*;
 import com.e_commerce.e_commerce.entity.Role;
 import com.e_commerce.e_commerce.entity.User;
-import com.e_commerce.e_commerce.dto.request.UserCreationRequest;
 import com.e_commerce.e_commerce.dto.response.UserResponse;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.mapper.UserMapper;
@@ -13,7 +12,6 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.template.EmailTemplates;
 import com.e_commerce.e_commerce.util.ParseUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
-import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -42,7 +40,6 @@ public class UserService {
     EmailService emailService;
     VerificationService verificationService;
 
-    @Transactional
     public UserResponse createUser(UserCreationRequest userCreationRequest) {
         User user = userMapper.toUser(userCreationRequest);
         user.setPassword(passwordEncoder.encode(userCreationRequest.getPassword()));
@@ -96,15 +93,7 @@ public class UserService {
                 user.setEmailVerified(emailVerified);
             }
         }
-        String oldEmail = user.getEmail();
         userMapper.updateUser(user, userUpdateRequest);
-        String newPassword = userUpdateRequest.getPassword();
-        // optional
-        if (newPassword != null) {
-            // old JWT has been invalidated
-            user.setTokenVersion(user.getTokenVersion() + 1);
-            user.setPassword(passwordEncoder.encode(newPassword));
-        }
         if (userUpdateRequest.getGender() != null) {
             user.setGender(ParseUtils.parseGender(userUpdateRequest.getGender()));
         }
@@ -113,31 +102,59 @@ public class UserService {
         } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
         }
-
-        // username may change or not
-        String newUsername = user.getUsername();
-        String newEmail = userUpdateRequest.getEmail();
-        if (newPassword != null) {
-            try {
-                if (newEmail != null && !newEmail.equals(oldEmail)) {
-                    emailService.sendEmail(oldEmail, EmailTemplates.PASSWORD_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildPasswordChangedEmail(newUsername));
-                    emailService.sendEmail(newEmail, EmailTemplates.PASSWORD_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildPasswordChangedEmail(newUsername));
-                } else {
-                    emailService.sendEmail(oldEmail, EmailTemplates.PASSWORD_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildPasswordChangedEmail(newUsername));
-                }
-            } catch (Exception e) {
-                log.warn("Exception sending password changed email: {}", e.getMessage());
-            }
-        }
-        if (newEmail != null && !newEmail.equals(oldEmail)) {
-            try {
-                emailService.sendEmail(oldEmail, EmailTemplates.EMAIL_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildEmailChangedEmail(newUsername, newEmail));
-                emailService.sendEmail(newEmail, EmailTemplates.EMAIL_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildEmailChangedEmail(newUsername, newEmail));
-            } catch (Exception e) {
-                log.warn("Exception sending email changed email: {}", e.getMessage());
-            }
-        }
         return userMapper.toUserResponse(user);
+    }
+
+    public String changePassword(ChangePasswordRequest request) {
+        User user = userRepository.findById(SecurityUtils.getUserIdFromAuthentication()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.WRONG_PASSWORD);
+        }
+        // old JWT has been invalidated
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        try {
+            emailService.sendEmail(user.getEmail(), EmailTemplates.PASSWORD_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildPasswordChangedEmail(user.getUsername()));
+        } catch (Exception e) {
+            log.warn("Exception sending password changed email: {}", e.getMessage());
+        }
+
+        return "Password changed successfully";
+    }
+
+    public String requestEmailChange(RequestChangeEmailOtpRequest request) {
+        String newEmail = request.getNewEmail();
+        if (userRepository.existsByEmail(newEmail)) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_IN_USE);
+        }
+        User user = userRepository.findById(SecurityUtils.getUserIdFromAuthentication()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        verificationService.sendOtpToChangeEmail(user, newEmail);
+        return "OTP sent to the current email";
+    }
+
+    public String changeEmail(ChangeEmailRequest request) {
+        String newEmail = request.getNewEmail();
+        if (userRepository.existsByEmail(newEmail)) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_IN_USE);
+        }
+        User user = userRepository.findById(SecurityUtils.getUserIdFromAuthentication()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        String oldEmail = user.getEmail();
+        verificationService.verifyOtpForChangeEmail(request.getOtp(), user.getId(), newEmail);
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        user.setEmail(newEmail);
+        userRepository.save(user);
+
+        try {
+            String username = user.getUsername();
+            emailService.sendEmail(oldEmail, EmailTemplates.EMAIL_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildEmailChangedEmail(username, newEmail));
+            emailService.sendEmail(newEmail, EmailTemplates.EMAIL_CHANGED_EMAIL_SUBJECT, EmailTemplates.buildEmailChangedEmail(username, newEmail));
+        } catch (Exception e) {
+            log.warn("Exception sending email changed email: {}", e.getMessage());
+        }
+
+        return "Email changed successfully";
     }
 
     @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.claims['userId']")
