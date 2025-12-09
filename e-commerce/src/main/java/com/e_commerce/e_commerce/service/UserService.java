@@ -131,7 +131,7 @@ public class UserService {
         }
         User user = userRepository.findById(SecurityUtils.getUserIdFromAuthentication()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         verificationService.sendOtpToChangeEmail(user, newEmail);
-        return "OTP sent to the current email";
+        return "OTP sent to the new email";
     }
 
     public String changeEmail(ChangeEmailRequest request) {

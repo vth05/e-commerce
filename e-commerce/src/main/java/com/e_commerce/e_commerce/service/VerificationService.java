@@ -74,7 +74,7 @@ public class VerificationService {
         try {
             SecureRandom random = new SecureRandom();
             String otp = String.valueOf(random.nextInt(900000) + 100000); // tạo từ 100000–999999
-            emailService.sendEmail(user.getEmail(), EmailTemplates.OTP_TO_CHANGE_EMAIL_EMAIL_SUBJECT, EmailTemplates.buildOtpToChangeEmailEmail(user.getUsername(), otp));
+            emailService.sendEmail(newEmail, EmailTemplates.OTP_TO_CHANGE_EMAIL_EMAIL_SUBJECT, EmailTemplates.buildOtpToChangeEmailEmail(user.getUsername(), otp));
             String userId = user.getId();
             String id = UUID.randomUUID().toString();
             OtpSession otpSession = OtpSession.builder()
