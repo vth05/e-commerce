@@ -28,7 +28,7 @@ public class DashboardService {
     OrderItemRepository orderItemRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
-    public RevenueStatsResponse getDailyRevenue(CheckoutStatus status, LocalDate start, LocalDate end) {
+    public RevenueStatsResponse getDailyRevenueByDateRange(CheckoutStatus status, LocalDate start, LocalDate end) {
         if (status == null) status = CheckoutStatus.PAID;
         DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
         LocalDateTime startDateTime = dateRange.start();

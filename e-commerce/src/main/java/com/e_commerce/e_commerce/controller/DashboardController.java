@@ -24,13 +24,13 @@ public class DashboardController {
     DashboardService dashboardService;
 
     @GetMapping("/revenue/daily")
-    ApiResponse<RevenueStatsResponse> getDailyRevenue(
+    ApiResponse<RevenueStatsResponse> getDailyRevenueByDateRange(
             @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
         return ApiResponse.<RevenueStatsResponse>builder()
-                .result(dashboardService.getDailyRevenue(status, start, end))
+                .result(dashboardService.getDailyRevenueByDateRange(status, start, end))
                 .build();
     }
 
