@@ -47,7 +47,7 @@ public class ProductVariant {
     @Builder.Default
     List<CartItem> cartItems = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "productVariant")
-//    @Builder.Default
-//    List<ProductImage> productImages = new ArrayList<>();
+    @OneToMany(mappedBy = "productVariant")
+    @Builder.Default
+    List<ProductImage> productImages = new ArrayList<>();
 }

@@ -17,13 +17,13 @@ import java.io.IOException;
 public class ProductVariantImageController {
     ProductVariantImageService productVariantImageService;
 
-    @PostMapping("/{variantId}/images")
-    ApiResponse<String> uploadImage(
-            @PathVariable String variantId,
-            @RequestParam MultipartFile file
-    ) throws IOException {
-        return ApiResponse.<String>builder()
-                .result(productVariantImageService.uploadImage(file))
-                .build();
-    }
+//    @PostMapping("/{variantId}/images")
+//    ApiResponse<String> uploadImage(
+//            @PathVariable String variantId,
+//            @RequestParam MultipartFile file
+//    ) throws IOException {
+//        return ApiResponse.<String>builder()
+//                .result(productVariantImageService.uploadImage(file))
+//                .build();
+//    }
 }

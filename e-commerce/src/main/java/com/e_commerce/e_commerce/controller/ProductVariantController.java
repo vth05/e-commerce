@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/product-variants")
@@ -58,6 +61,16 @@ public class ProductVariantController {
         return ApiResponse.<ProductVariantResponse>builder()
                 .message("Product variant deleted successfully")
                 .result(productVariantService.deactivateProductVariant(productVariantId))
+                .build();
+    }
+
+    @PostMapping("/{productVariantId}/images")
+    ApiResponse<String> uploadVariantImage(
+            @PathVariable String productVariantId,
+            @RequestParam MultipartFile file
+    ) throws IOException {
+        return ApiResponse.<String>builder()
+                .result(productVariantService.uploadVariantImage(productVariantId, file))
                 .build();
     }
 }
