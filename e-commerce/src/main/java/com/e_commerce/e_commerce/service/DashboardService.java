@@ -28,7 +28,7 @@ public class DashboardService {
     OrderItemRepository orderItemRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
-    public RevenueStatsResponse getDailyRevenueByDateRange(CheckoutStatus status, LocalDate start, LocalDate end) {
+    public RevenueStatsResponse getDailyRevenueByDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end) {
         if (status == null) status = CheckoutStatus.PAID;
         DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
         LocalDateTime startDateTime = dateRange.start();
@@ -45,47 +45,53 @@ public class DashboardService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public List<ProductRevenueResponse> getRevenueByProductAndDateRange(LocalDate start, LocalDate end) {
+    public List<ProductRevenueResponse> getRevenueByProductAndDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end) {
+        if (status == null) status = CheckoutStatus.PAID;
         DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
         LocalDateTime startDateTime = dateRange.start();
         LocalDateTime endDateTime = dateRange.end();
-        return orderItemRepository.findRevenueByProductAndDateRange(startDateTime, endDateTime);
+        return orderItemRepository.findRevenueByProductAndDateRangeAndCheckoutStatus(status, startDateTime, endDateTime);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<TopProductsByRevenueResponse> getTopProductsByRevenueAndDateRange(LocalDate start, LocalDate end, int limit) {
+    public Page<TopProductsByRevenueResponse> getTopProductsByRevenueAndDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end, int limit) {
         if (limit > 50) limit = 50;
+        if (status == null) status = CheckoutStatus.PAID;
         DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
         LocalDateTime startDateTime = dateRange.start();
         LocalDateTime endDateTime = dateRange.end();
         Pageable pageable = PageRequest.of(0, limit);
-        return orderItemRepository.findTopProductsByRevenueAndDateRange(startDateTime, endDateTime, pageable);
+        return orderItemRepository.findTopProductsByRevenueAndDateRangeAndCheckoutStatus(status, startDateTime, endDateTime, pageable);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<TopProductsByQuantitySoldResponse> getTopProductsByQuantitySoldAndDateRange(LocalDate start, LocalDate end, int limit) {
+    public Page<TopProductsByQuantitySoldResponse> getTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end, int limit) {
         if (limit > 50) limit = 50;
+        if (status == null) status = CheckoutStatus.PAID;
         DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
         LocalDateTime startDateTime = dateRange.start();
         LocalDateTime endDateTime = dateRange.end();
         Pageable pageable = PageRequest.of(0, limit);
-        return orderItemRepository.findTopProductsByQuantitySoldAndDateRange(startDateTime, endDateTime, pageable);
+        return orderItemRepository.findTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(status, startDateTime, endDateTime, pageable);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public List<TopCustomersResponse> getTopCustomersByDateRangeAndUserStatus(LocalDate start, LocalDate end, boolean active, int limit) {
+    public List<TopCustomersResponse> getTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end, boolean active, int limit) {
         if (limit > 50) limit = 50;
+        if (status == null) status = CheckoutStatus.PAID;
+        String statusString = status.name();
         DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
         LocalDateTime startDateTime = dateRange.start();
         LocalDateTime endDateTime = dateRange.end();
-        List<Object[]> rows = orderRepository.findTopCustomersByDateRangeAndUserStatus(startDateTime, endDateTime, active, limit);
+        List<Object[]> rows = orderRepository.findTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(statusString, startDateTime, endDateTime, active, limit);
         List<TopCustomersResponse> topCustomersResponses = rows.stream().map(row -> new TopCustomersResponse(
                 String.valueOf(row[0]),
                 String.valueOf(row[1]),
                 String.valueOf(row[2]),
                 String.valueOf(row[3]),
                 (BigDecimal) row[4],
-                (Long) row[5]
+//                (Long) row[5]
+                ((Number) row[5]).longValue()
         )).toList();
         return topCustomersResponses;
     }

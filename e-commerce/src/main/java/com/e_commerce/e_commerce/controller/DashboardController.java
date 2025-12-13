@@ -24,57 +24,61 @@ public class DashboardController {
     DashboardService dashboardService;
 
     @GetMapping("/revenue/daily")
-    ApiResponse<RevenueStatsResponse> getDailyRevenueByDateRange(
+    ApiResponse<RevenueStatsResponse> getDailyRevenueByDateRangeAndCheckoutStatus(
             @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
         return ApiResponse.<RevenueStatsResponse>builder()
-                .result(dashboardService.getDailyRevenueByDateRange(status, start, end))
+                .result(dashboardService.getDailyRevenueByDateRangeAndCheckoutStatus(status, start, end))
                 .build();
     }
 
     @GetMapping("/revenue/products")
-    ApiResponse<List<ProductRevenueResponse>> getRevenueByProductAndDateRange(
+    ApiResponse<List<ProductRevenueResponse>> getRevenueByProductAndDateRangeAndCheckoutStatus(
+            @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
     ) {
         return ApiResponse.<List<ProductRevenueResponse>>builder()
-                .result(dashboardService.getRevenueByProductAndDateRange(start, end))
+                .result(dashboardService.getRevenueByProductAndDateRangeAndCheckoutStatus(status, start, end))
                 .build();
     }
 
     @GetMapping("/revenue/products/top-revenue")
-    ApiResponse<Page<TopProductsByRevenueResponse>> getTopProductsByRevenueAndDateRange(
+    ApiResponse<Page<TopProductsByRevenueResponse>> getTopProductsByRevenueAndDateRangeAndCheckoutStatus(
+            @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "5") int limit
     ) {
         return ApiResponse.<Page<TopProductsByRevenueResponse>>builder()
-                .result(dashboardService.getTopProductsByRevenueAndDateRange(start, end, limit))
+                .result(dashboardService.getTopProductsByRevenueAndDateRangeAndCheckoutStatus(status, start, end, limit))
                 .build();
     }
 
     @GetMapping("/revenue/products/top-quantity-sold")
-    ApiResponse<Page<TopProductsByQuantitySoldResponse>> getTopProductsByQuantitySoldAndDateRange(
+    ApiResponse<Page<TopProductsByQuantitySoldResponse>> getTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(
+            @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "5") int limit
     ) {
         return ApiResponse.<Page<TopProductsByQuantitySoldResponse>>builder()
-                .result(dashboardService.getTopProductsByQuantitySoldAndDateRange(start, end, limit))
+                .result(dashboardService.getTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(status, start, end, limit))
                 .build();
     }
 
     @GetMapping("/revenue/users/top-revenue")
-    ApiResponse<List<TopCustomersResponse>> getTopCustomersByDateRangeAndUserStatus(
+    ApiResponse<List<TopCustomersResponse>> getTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(
+            @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "true") boolean active,
             @RequestParam(defaultValue = "5") int limit
     ) {
         return ApiResponse.<List<TopCustomersResponse>>builder()
-                .result(dashboardService.getTopCustomersByDateRangeAndUserStatus(start, end, active, limit))
+                .result(dashboardService.getTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(status, start, end, active, limit))
                 .build();
     }
 }

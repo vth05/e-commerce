@@ -4,6 +4,7 @@ import com.e_commerce.e_commerce.dto.response.ProductRevenueResponse;
 import com.e_commerce.e_commerce.dto.response.TopProductsByQuantitySoldResponse;
 import com.e_commerce.e_commerce.dto.response.TopProductsByRevenueResponse;
 import com.e_commerce.e_commerce.entity.OrderItem;
+import com.e_commerce.e_commerce.enums.CheckoutStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,28 +20,31 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
     @Query("""
             select new com.e_commerce.e_commerce.dto.response.ProductRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))
             from OrderItem oi
-            where oi.createdAt >= :start and oi.createdAt <= :end
+            join oi.order o
+            where o.createdAt >= :start and o.createdAt <= :end and o.checkoutStatus = :status
             group by oi.productName
             """)
-    List<ProductRevenueResponse> findRevenueByProductAndDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    List<ProductRevenueResponse> findRevenueByProductAndDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("""
             select new com.e_commerce.e_commerce.dto.response.TopProductsByRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))
             from OrderItem oi
-            where oi.createdAt >= :start and oi.createdAt <= :end
+            join oi.order o
+            where o.createdAt >= :start and o.createdAt <= :end and o.checkoutStatus = :status
             group by oi.productName
             order by sum(oi.priceAtPurchase * oi.quantity) desc
             """)
-    Page<TopProductsByRevenueResponse> findTopProductsByRevenueAndDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
+    Page<TopProductsByRevenueResponse> findTopProductsByRevenueAndDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
 
     @Query("""
             select new com.e_commerce.e_commerce.dto.response.TopProductsByQuantitySoldResponse(oi.productName, sum(oi.quantity))
             from OrderItem oi
-            where oi.createdAt >= :start and oi.createdAt <= :end
+            join oi.order o
+            where o.createdAt >= :start and o.createdAt <= :end and o.checkoutStatus = :status
             group by oi.productName
             order by sum(oi.quantity) desc
             """)
-    Page<TopProductsByQuantitySoldResponse> findTopProductsByQuantitySoldAndDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
+    Page<TopProductsByQuantitySoldResponse> findTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
 
     @Query(value = """
             select oi.product_id,
@@ -56,7 +60,8 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
                 from product_variant
                 group by product_id
             ) pv on oi.product_id = pv.product_id
-            where oi.created_at >= :start and oi.created_at <= :end
+            join orders o on oi.order_id = o.cart_id
+            where oi.created_at >= :start and oi.created_at <= :end and o.checkout_status in ('PAID', 'PENDING')
             group by oi.product_id, oi.product_name, pv.displayPrice, pv.stockQuantity
             order by quantitySold desc
             limit :limit

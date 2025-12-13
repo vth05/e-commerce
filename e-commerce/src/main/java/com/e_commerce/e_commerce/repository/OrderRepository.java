@@ -48,12 +48,13 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             select u.id, concat(u.first_name, ' ', u.last_name) as full_name, u.email, u.phone_number, sum(o.total_price) as total_spent, count(*) as total_orders
             from orders o
             join user u on o.user_id = u.id
-            where u.active = :active and o.created_at between :start and :end
+            where u.active = :active and o.checkout_status = :status and o.created_at between :start and :end
             group by u.id, concat(u.first_name, ' ', u.last_name), u.email, u.phone_number
             order by total_spent desc
             limit :limit
             """, nativeQuery = true)
-    List<Object[]> findTopCustomersByDateRangeAndUserStatus(
+    List<Object[]> findTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(
+            @Param("status") String status,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
             @Param("active") boolean active,
