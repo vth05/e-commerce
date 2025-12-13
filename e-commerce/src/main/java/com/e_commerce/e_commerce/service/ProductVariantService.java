@@ -2,12 +2,14 @@ package com.e_commerce.e_commerce.service;
 
 import com.e_commerce.e_commerce.dto.request.ProductVariantCreationRequest;
 import com.e_commerce.e_commerce.dto.request.ProductVariantUpdateRequest;
+import com.e_commerce.e_commerce.dto.response.ProductImageResponse;
 import com.e_commerce.e_commerce.dto.response.ProductVariantResponse;
 import com.e_commerce.e_commerce.entity.Product;
 import com.e_commerce.e_commerce.entity.ProductImage;
 import com.e_commerce.e_commerce.entity.ProductVariant;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.exception.AppException;
+import com.e_commerce.e_commerce.mapper.ProductImageMapper;
 import com.e_commerce.e_commerce.mapper.ProductVariantMapper;
 import com.e_commerce.e_commerce.repository.ProductImageRepository;
 import com.e_commerce.e_commerce.repository.ProductRepository;
@@ -39,6 +41,7 @@ public class ProductVariantService {
     ProductRepository productRepository;
     ProductVariantImageService productVariantImageService;
     ProductImageRepository productImageRepository;
+    ProductImageMapper productImageMapper;
 
     @PreAuthorize("hasRole('ADMIN')")
     public ProductVariantResponse createProductVariant(ProductVariantCreationRequest request, String productId) {
@@ -111,7 +114,7 @@ public class ProductVariantService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public String uploadVariantImage(String productVariantId, MultipartFile file) throws IOException {
+    public ProductImageResponse uploadVariantImage(String productVariantId, MultipartFile file) throws IOException {
         String imageUrl = productVariantImageService.uploadImage(file);
 
         ProductVariant variant = productVariantRepository.findById(productVariantId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
@@ -121,8 +124,6 @@ public class ProductVariantService {
                 .productVariant(variant)
                 .build();
 
-        productImageRepository.save(newImage);
-
-        return imageUrl;
+        return productImageMapper.toProductImageResponse(productImageRepository.save(newImage));
     }
 }

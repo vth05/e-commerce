@@ -34,5 +34,5 @@ public class ProductVariantResponse {
 
     String productId;
 
-    List<String> productImages;
+    List<ProductImageResponse> productImages;
 }

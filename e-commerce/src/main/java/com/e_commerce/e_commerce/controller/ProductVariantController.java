@@ -3,6 +3,7 @@ package com.e_commerce.e_commerce.controller;
 import com.e_commerce.e_commerce.dto.request.ProductVariantCreationRequest;
 import com.e_commerce.e_commerce.dto.request.ProductVariantUpdateRequest;
 import com.e_commerce.e_commerce.dto.response.ApiResponse;
+import com.e_commerce.e_commerce.dto.response.ProductImageResponse;
 import com.e_commerce.e_commerce.dto.response.ProductVariantResponse;
 import com.e_commerce.e_commerce.service.ProductVariantService;
 import jakarta.validation.Valid;
@@ -65,11 +66,11 @@ public class ProductVariantController {
     }
 
     @PostMapping("/{productVariantId}/images")
-    ApiResponse<String> uploadVariantImage(
+    ApiResponse<ProductImageResponse> uploadVariantImage(
             @PathVariable String productVariantId,
             @RequestParam MultipartFile file
     ) throws IOException {
-        return ApiResponse.<String>builder()
+        return ApiResponse.<ProductImageResponse>builder()
                 .result(productVariantService.uploadVariantImage(productVariantId, file))
                 .build();
     }
