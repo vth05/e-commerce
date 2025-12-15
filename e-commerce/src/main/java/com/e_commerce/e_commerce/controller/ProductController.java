@@ -64,7 +64,7 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    ApiResponse<List<ProductResponse>> findBySearchCriteria(ProductSearchRequest request) {
+    ApiResponse<List<ProductResponse>> findBySearchCriteria(@RequestBody ProductSearchRequest request) {
         return ApiResponse.<List<ProductResponse>>builder()
                 .result(productService.findBySearchCriteria(request))
                 .build();
