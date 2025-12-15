@@ -87,7 +87,19 @@ public class ProductService {
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
-    public List<ProductResponse> findBySearchCriteria(ProductSearchRequest request) {
-        return productRepository.findBySearchCriteria(request).stream().map(product -> productMapper.toProductResponse(product)).toList();
+    public Page<ProductResponse> findBySearchCriteria(
+            ProductSearchRequest request,
+            int page,
+            int size,
+            String sortDir
+    ) {
+        boolean isAdmin = SecurityUtils.isAdmin();
+        String sortBy = "price";
+        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() :
+                Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Product> products;
+        return productRepository.findBySearchCriteria(request, isAdmin, pageable).map(product -> productMapper.toProductResponse(product));
     }
 }

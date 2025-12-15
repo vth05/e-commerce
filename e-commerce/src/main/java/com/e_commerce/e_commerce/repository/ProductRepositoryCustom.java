@@ -2,9 +2,9 @@ package com.e_commerce.e_commerce.repository;
 
 import com.e_commerce.e_commerce.dto.request.ProductSearchRequest;
 import com.e_commerce.e_commerce.entity.Product;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProductRepositoryCustom {
-    List<Product> findBySearchCriteria(ProductSearchRequest request);
+    Page<Product> findBySearchCriteria(ProductSearchRequest request, boolean isAdmin, Pageable pageable);
 }

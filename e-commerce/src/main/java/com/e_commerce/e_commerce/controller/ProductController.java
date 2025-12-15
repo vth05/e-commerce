@@ -63,10 +63,16 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/search")
-    ApiResponse<List<ProductResponse>> findBySearchCriteria(@RequestBody ProductSearchRequest request) {
-        return ApiResponse.<List<ProductResponse>>builder()
-                .result(productService.findBySearchCriteria(request))
+    // can't use @GetMapping with @RequestBody (chatgpt) => use @PostMapping
+    @PostMapping("/search")
+    ApiResponse<Page<ProductResponse>> findBySearchCriteria(
+            @RequestBody ProductSearchRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .result(productService.findBySearchCriteria(request, page, size, sortDir))
                 .build();
     }
 }
