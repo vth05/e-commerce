@@ -1,6 +1,7 @@
 package com.e_commerce.e_commerce.controller;
 
 import com.e_commerce.e_commerce.dto.request.ProductCreationRequest;
+import com.e_commerce.e_commerce.dto.request.ProductSearchRequest;
 import com.e_commerce.e_commerce.dto.request.ProductUpdateRequest;
 import com.e_commerce.e_commerce.dto.response.ApiResponse;
 import com.e_commerce.e_commerce.dto.response.ProductResponse;
@@ -59,6 +60,13 @@ public class ProductController {
         return ApiResponse.<ProductResponse>builder()
                 .message("Product deleted successfully")
                 .result(productService.deactivateProduct(productId))
+                .build();
+    }
+
+    @GetMapping("/search")
+    ApiResponse<List<ProductResponse>> findBySearchCriteria(ProductSearchRequest request) {
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.findBySearchCriteria(request))
                 .build();
     }
 }

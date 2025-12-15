@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, String> {
+public interface ProductRepository extends JpaRepository<Product, String>, ProductRepositoryCustom {
     Optional<Product> findByIdAndActiveTrue(String productId);
 
     Page<Product> findAllByActiveTrue(Pageable pageable);

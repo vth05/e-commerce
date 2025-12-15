@@ -28,6 +28,16 @@ public class ProductVariantResponse {
 
     String storage;
 
+    String cpu;
+
+    String gpu;
+
+    BigDecimal screenSize;
+
+    String screenResolution;
+
+    Integer refreshRateHz;
+
     String sku;
 
     boolean active;

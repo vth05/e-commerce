@@ -15,6 +15,8 @@ public class ProductUpdateRequest {
     @Size(min = 1, message = "PRODUCT_NAME_INVALID")
     String name;
 
+    String brand;
+
     @Size(min = 1, message = "PRODUCT_CATEGORY_INVALID")
     String category;
 

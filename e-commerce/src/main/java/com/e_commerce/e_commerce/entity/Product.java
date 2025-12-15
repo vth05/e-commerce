@@ -21,6 +21,10 @@ public class Product {
 
     String name;
 
+    String brand;
+
+    String code;
+
     // save enum as string in database
     @Enumerated(EnumType.STRING)
     Category category;

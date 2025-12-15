@@ -1,5 +1,6 @@
 package com.e_commerce.e_commerce.util;
 
+import java.math.BigDecimal;
 import java.text.Normalizer;
 
 public class ProductVariantUtils {
@@ -13,24 +14,43 @@ public class ProductVariantUtils {
                 .toUpperCase();
     }
 
-    public static String generateProductVariantName(String productName, String color, String ram, String storage) {
+    public static String generateProductVariantName(
+            String productName,
+            String cpu,
+            String ram,
+            String storage,
+            String gpu,
+            BigDecimal screenSize,
+            String screenResolution,
+            Integer refreshRateHz
+    ) {
         StringBuilder sb = new StringBuilder(productName);
-        if (color != null && !color.isBlank()) {
-            sb.append(", ").append(color.trim());
+        if (cpu != null && !cpu.isBlank()) {
+            sb.append(", ").append(cpu.trim());
         }
         if (ram != null && !ram.isBlank()) {
-            sb.append(", ").append(ram.trim());
+            sb.append(", RAM ").append(ram.trim());
         }
         if (storage != null && !storage.isBlank()) {
-            sb.append(", ").append(storage.trim());
+            sb.append(", SSD ").append(storage.trim());
+        }
+        if (gpu != null && !gpu.isBlank()) {
+            sb.append(", ").append(gpu.trim());
+        }
+        if (screenSize != null) {
+            sb.append(", ").append(screenSize).append("″");
+        }
+        if (screenResolution != null && !screenResolution.isBlank()) {
+            sb.append(", ").append(screenResolution.trim());
+        }
+        if (refreshRateHz != null) {
+            sb.append(", ").append(refreshRateHz).append("Hz");
         }
         return sb.toString();
     }
 
-    public static String generateSku(String productName, String color, String ram, String storage) {
-        String baseName = normalize(productName);
-
-        StringBuilder sb = new StringBuilder(baseName);
+    public static String generateSku(String productCode, String color, String ram, String storage) {
+        StringBuilder sb = new StringBuilder(normalize(productCode));
         if (color != null && !color.isBlank()) {
             sb.append("-").append(normalize(color));
         }

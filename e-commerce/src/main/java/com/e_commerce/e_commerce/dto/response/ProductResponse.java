@@ -13,6 +13,10 @@ public class ProductResponse {
 
     String name;
 
+    String brand;
+
+    String code;
+
     String category;
 
     String description;

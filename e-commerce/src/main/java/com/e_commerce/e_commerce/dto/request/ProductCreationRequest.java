@@ -15,6 +15,8 @@ public class ProductCreationRequest {
     @NotBlank(message = "PRODUCT_NAME_REQUIRED")
     String name;
 
+    String brand;
+
     @NotBlank(message = "PRODUCT_CATEGORY_REQUIRED")
     String category;
 

@@ -33,6 +33,16 @@ public class ProductVariant {
 
     String storage;
 
+    String cpu;
+
+    String gpu;
+
+    BigDecimal screenSize;
+
+    String screenResolution;
+
+    Integer refreshRateHz;
+
     @Column(unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci", nullable = false)
     String sku;
 

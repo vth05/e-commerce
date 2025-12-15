@@ -1,6 +1,7 @@
 package com.e_commerce.e_commerce.service;
 
 import com.e_commerce.e_commerce.dto.request.ProductCreationRequest;
+import com.e_commerce.e_commerce.dto.request.ProductSearchRequest;
 import com.e_commerce.e_commerce.dto.request.ProductUpdateRequest;
 import com.e_commerce.e_commerce.dto.response.ProductResponse;
 import com.e_commerce.e_commerce.entity.Product;
@@ -8,7 +9,9 @@ import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.ProductMapper;
 import com.e_commerce.e_commerce.repository.ProductRepository;
+import com.e_commerce.e_commerce.repository.ProductRepositoryImpl;
 import com.e_commerce.e_commerce.util.ParseUtils;
+import com.e_commerce.e_commerce.util.ProductUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +38,7 @@ public class ProductService {
     public ProductResponse createProduct(ProductCreationRequest productCreationRequest) {
         Product product = productMapper.toProduct(productCreationRequest);
         product.setCategory(ParseUtils.parseCategory(productCreationRequest.getCategory()));
+        product.setCode(ProductUtils.generateProductCode());
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
@@ -79,5 +85,9 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
         product.setActive(false);
         return productMapper.toProductResponse(productRepository.save(product));
+    }
+
+    public List<ProductResponse> findBySearchCriteria(ProductSearchRequest request) {
+        return productRepository.findBySearchCriteria(request).stream().map(product -> productMapper.toProductResponse(product)).toList();
     }
 }

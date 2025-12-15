@@ -33,4 +33,14 @@ public class ProductVariantCreationRequest {
     String ram;
 
     String storage;
+
+    String cpu;
+
+    String gpu;
+
+    BigDecimal screenSize;
+
+    String screenResolution;
+
+    Integer refreshRateHz;
 }

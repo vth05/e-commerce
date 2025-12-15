@@ -30,5 +30,15 @@ public class ProductVariantUpdateRequest {
 
     String storage;
 
+    String cpu;
+
+    String gpu;
+
+    BigDecimal screenSize;
+
+    String screenResolution;
+
+    Integer refreshRateHz;
+
     Boolean active;
 }

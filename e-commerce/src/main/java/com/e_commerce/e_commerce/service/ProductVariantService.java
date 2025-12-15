@@ -1,5 +1,6 @@
 package com.e_commerce.e_commerce.service;
 
+import com.e_commerce.e_commerce.dto.request.ProductSearchRequest;
 import com.e_commerce.e_commerce.dto.request.ProductVariantCreationRequest;
 import com.e_commerce.e_commerce.dto.request.ProductVariantUpdateRequest;
 import com.e_commerce.e_commerce.dto.response.ProductImageResponse;
@@ -16,6 +17,7 @@ import com.e_commerce.e_commerce.repository.ProductRepository;
 import com.e_commerce.e_commerce.repository.ProductVariantRepository;
 import com.e_commerce.e_commerce.util.ProductVariantUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -51,8 +53,17 @@ public class ProductVariantService {
         }
         ProductVariant productVariant = productVariantMapper.toProductVariant(request);
         productVariant.setProduct(product);
-        productVariant.setProductVariantName(ProductVariantUtils.generateProductVariantName(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
-        productVariant.setSku(ProductVariantUtils.generateSku(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
+        productVariant.setProductVariantName(ProductVariantUtils.generateProductVariantName(
+                product.getName(),
+                productVariant.getCpu(),
+                productVariant.getRam(),
+                productVariant.getStorage(),
+                productVariant.getGpu(),
+                productVariant.getScreenSize(),
+                productVariant.getScreenResolution(),
+                productVariant.getRefreshRateHz()
+        ));
+        productVariant.setSku(ProductVariantUtils.generateSku(product.getCode(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
         try {
             productVariant = productVariantRepository.save(productVariant);
         } catch (DataIntegrityViolationException e) {
@@ -96,8 +107,17 @@ public class ProductVariantService {
     public ProductVariantResponse updateProductVariant(ProductVariantUpdateRequest request, String productVariantId) {
         ProductVariant productVariant = productVariantRepository.findById(productVariantId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
         productVariantMapper.updateProductVariant(productVariant, request);
-        productVariant.setProductVariantName(ProductVariantUtils.generateProductVariantName(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
-        productVariant.setSku(ProductVariantUtils.generateSku(productVariant.getProduct().getName(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
+        productVariant.setProductVariantName(ProductVariantUtils.generateProductVariantName(
+                productVariant.getProduct().getName(),
+                productVariant.getCpu(),
+                productVariant.getRam(),
+                productVariant.getStorage(),
+                productVariant.getGpu(),
+                productVariant.getScreenSize(),
+                productVariant.getScreenResolution(),
+                productVariant.getRefreshRateHz()
+        ));
+        productVariant.setSku(ProductVariantUtils.generateSku(productVariant.getProduct().getCode(), productVariant.getColor(), productVariant.getRam(), productVariant.getStorage()));
         try {
             productVariant = productVariantRepository.save(productVariant);
         } catch (DataIntegrityViolationException e) {
