@@ -12,6 +12,7 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.template.EmailTemplates;
 import com.e_commerce.e_commerce.util.ParseUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -175,5 +177,22 @@ public class UserService {
             user = userRepository.findByIdAndActiveTrue(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         }
         return user;
+    }
+
+    @Transactional
+    public User findOrCreateUser(OAuth2User oAuth2User) {
+        String email = oAuth2User.getAttribute("email");
+        Set<Role> roles = new HashSet<>();
+        roleRepository.findById("USER").ifPresent(role -> roles.add(role));
+        // find (login) or create user (register)
+        return userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = User.builder()
+                    .username(email)
+                    .email(email)
+                    .emailVerified(true)
+                    .roles(roles)
+                    .build();
+            return userRepository.save(newUser);
+        });
     }
 }

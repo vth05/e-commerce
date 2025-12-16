@@ -1,5 +1,11 @@
 package com.e_commerce.e_commerce.configuration;
 
+import com.e_commerce.e_commerce.entity.Role;
+import com.e_commerce.e_commerce.entity.User;
+import com.e_commerce.e_commerce.repository.RoleRepository;
+import com.e_commerce.e_commerce.repository.UserRepository;
+import com.e_commerce.e_commerce.service.AuthenticationService;
+import com.e_commerce.e_commerce.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -10,9 +16,14 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -32,6 +43,10 @@ public class SecurityConfig {
             "/payment/**",
     };
     CustomJwtDecoder customJwtDecoder;
+    AuthenticationService authenticationService;
+    UserService userService;
+    UserRepository userRepository;
+    RoleRepository roleRepository;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -44,8 +59,12 @@ public class SecurityConfig {
                 .formLogin(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler((req, res, auth) -> {
+                            OAuth2AuthenticationToken oAuth2AuthenticationToken = (OAuth2AuthenticationToken) auth;
+                            OAuth2User oAuth2User = oAuth2AuthenticationToken.getPrincipal();
+                            User user = userService.findOrCreateUser(oAuth2User);
+                            String token = authenticationService.generateToken(user);
                             res.setContentType("application/json");
-                            res.getWriter().write("{\"token\":\"abc123\"}");
+                            res.getWriter().write("{\"token\":\"" + token + "\"}");
                         }))
         ;
 

@@ -26,7 +26,9 @@ import java.util.Collection;
 public class CustomUserDetailsService implements UserDetailsService {
     UserRepository userRepository;
 
-    // failed to lazily initialize a collection of role: com.e_commerce.e_commerce.entity.User.roles: could not initialize proxy - no Session, so I use Transactional
+    // Fix for org.hibernate.LazyInitializationException: failed to lazily initialize a collection of role: com.e_commerce.e_commerce.entity.User.roles: could not initialize proxy - no Session.
+    // This exception is observed during web application flow (e.g., after OAuth or form submit), but not when tested via Postman,
+    // indicating the need to extend the Hibernate Session boundary using @Transactional.
     @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
