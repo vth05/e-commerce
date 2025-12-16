@@ -79,14 +79,11 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
             where.and(productVariant.active.isTrue());
         }
 
-        Sort.Direction direction = pageable.getSort().getOrderFor("price") != null ?
-                pageable.getSort().getOrderFor("price").getDirection() :
-                Sort.Direction.ASC;
+        Sort.Direction direction = pageable.getSort().getOrderFor("price").getDirection();
 
-        OrderSpecifier<?> priceOrder =
-                direction.isAscending()
-                        ? productVariant.price.min().asc()
-                        : productVariant.price.min().desc();
+        OrderSpecifier<?> priceOrder = direction.isAscending() ?
+                productVariant.price.min().asc() :
+                productVariant.price.min().desc();
 
         List<Product> products = jpaQueryFactory
                 .select(product)
