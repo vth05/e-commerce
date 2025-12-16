@@ -1,9 +1,6 @@
 package com.e_commerce.e_commerce.configuration;
 
-import com.e_commerce.e_commerce.entity.Role;
 import com.e_commerce.e_commerce.entity.User;
-import com.e_commerce.e_commerce.repository.RoleRepository;
-import com.e_commerce.e_commerce.repository.UserRepository;
 import com.e_commerce.e_commerce.service.AuthenticationService;
 import com.e_commerce.e_commerce.service.UserService;
 import lombok.AccessLevel;
@@ -21,9 +18,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -45,8 +39,6 @@ public class SecurityConfig {
     CustomJwtDecoder customJwtDecoder;
     AuthenticationService authenticationService;
     UserService userService;
-    UserRepository userRepository;
-    RoleRepository roleRepository;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
