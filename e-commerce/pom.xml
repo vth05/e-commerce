@@ -103,6 +103,11 @@
 			<version>5.1.0</version>
 			<classifier>jakarta</classifier>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-webflux -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webflux</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

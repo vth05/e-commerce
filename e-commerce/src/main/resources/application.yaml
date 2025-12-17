@@ -43,6 +43,11 @@ vnpay:
   secret-key: "${VNPAY_SECRET_KEY}"
   return-url: "${VNPAY_RETURN_URL}"
 
+ghn:
+  base-url: https://dev-online-gateway.ghn.vn/shiip/public-api
+  token: ${GHN_TOKEN}
+  shop-id: ${GHN_SHOP_ID}
+
 sendgrid:
   api:
     key: ${SENDGRID_API_KEY}
