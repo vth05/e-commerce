@@ -7,6 +7,8 @@ import com.e_commerce.e_commerce.dto.response.GhnCalculateFeeResponse;
 import com.e_commerce.e_commerce.dto.response.GhnCancelOrderResponse;
 import com.e_commerce.e_commerce.dto.response.GhnCreateOrderResponse;
 import com.e_commerce.e_commerce.dto.response.GhnRawResponse;
+import com.e_commerce.e_commerce.enums.ErrorCode;
+import com.e_commerce.e_commerce.exception.AppException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -87,18 +89,18 @@ public class GhnService {
         log.error("Http status: " + e.getStatusCode());
         log.error("Message: " + errorBody);
         log.error("---------------------------");
-        return new RuntimeException("GHN API Error: " + errorBody);
+        return new AppException(ErrorCode.GHN_HTTP_ERROR);
     }
 
     private void checkRaw(GhnRawResponse<?> raw) {
         if (raw == null) {
-            throw new RuntimeException("GHN API returned empty response");
+            throw new AppException(ErrorCode.GHN_EMPTY_RESPONSE_BODY);
         }
         if (raw.getCode() != 200) {
             throw new RuntimeException(raw.getMessage());
         }
         if (raw.getData() == null) {
-            throw new RuntimeException("GHN response data is null");
+            throw new AppException(ErrorCode.GHN_DATA_NULL);
         }
     }
 }

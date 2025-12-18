@@ -86,6 +86,9 @@ public enum ErrorCode {
     OTP_REQUIRED(1069, "OTP is required", HttpStatus.BAD_REQUEST),
     EMAIL_ALREADY_IN_USE(1070, "Email is already in use", HttpStatus.CONFLICT),
     EMAIL_SAME_AS_OLD(1071, "New email must be different from old email", HttpStatus.BAD_REQUEST),
+    GHN_HTTP_ERROR(2001, "Failed to communicate with GHN API (HTTP Error)", HttpStatus.BAD_GATEWAY),
+    GHN_EMPTY_RESPONSE_BODY(2002, "GHN API returned an empty response body", HttpStatus.BAD_GATEWAY),
+    GHN_DATA_NULL(2003, "GHN API response 'data' field is null", HttpStatus.BAD_GATEWAY),
     ;
 
     int code;
