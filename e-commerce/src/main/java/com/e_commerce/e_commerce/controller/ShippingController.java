@@ -1,12 +1,7 @@
 package com.e_commerce.e_commerce.controller;
 
-import com.e_commerce.e_commerce.dto.request.GhnCalculateFeeRequest;
-import com.e_commerce.e_commerce.dto.request.GhnCancelOrderRequest;
-import com.e_commerce.e_commerce.dto.request.GhnCreateOrderRequest;
-import com.e_commerce.e_commerce.dto.response.ApiResponse;
-import com.e_commerce.e_commerce.dto.response.GhnCalculateFeeResponse;
-import com.e_commerce.e_commerce.dto.response.GhnCancelOrderResponse;
-import com.e_commerce.e_commerce.dto.response.GhnCreateOrderResponse;
+import com.e_commerce.e_commerce.dto.request.*;
+import com.e_commerce.e_commerce.dto.response.*;
 import com.e_commerce.e_commerce.service.GhnService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +44,33 @@ public class ShippingController {
                 .code(200)
                 .message("Success")
                 .result(ghnService.cancelOrders(request))
+                .build();
+    }
+
+    @PostMapping("/expected-delivery-time")
+    ApiResponse<GhnExpectedDeliveryTimeResponse> calculateExpectedDeliveryTime(@RequestBody GhnExpectedDeliveryTimeRequest request) {
+        return ApiResponse.<GhnExpectedDeliveryTimeResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(ghnService.calculateExpectedDeliveryTime(request))
+                .build();
+    }
+
+    @PostMapping("/return-order")
+    ApiResponse<List<GhnReturnOrderResponse>> returnOrder(@RequestBody GhnReturnOrderRequest request) {
+        return ApiResponse.<List<GhnReturnOrderResponse>>builder()
+                .code(200)
+                .message("Success")
+                .result(ghnService.returnOrder(request))
+                .build();
+    }
+
+    @PostMapping("/order-info")
+    ApiResponse<GhnOrderInfoResponse> getOrderInfo(@RequestBody GhnOrderInfoRequest request) {
+        return ApiResponse.<GhnOrderInfoResponse>builder()
+                .code(200)
+                .message("Success")
+                .result(ghnService.getOrderInfo(request))
                 .build();
     }
 }

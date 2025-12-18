@@ -1,12 +1,7 @@
 package com.e_commerce.e_commerce.service;
 
-import com.e_commerce.e_commerce.dto.request.GhnCalculateFeeRequest;
-import com.e_commerce.e_commerce.dto.request.GhnCancelOrderRequest;
-import com.e_commerce.e_commerce.dto.request.GhnCreateOrderRequest;
-import com.e_commerce.e_commerce.dto.response.GhnCalculateFeeResponse;
-import com.e_commerce.e_commerce.dto.response.GhnCancelOrderResponse;
-import com.e_commerce.e_commerce.dto.response.GhnCreateOrderResponse;
-import com.e_commerce.e_commerce.dto.response.GhnRawResponse;
+import com.e_commerce.e_commerce.dto.request.*;
+import com.e_commerce.e_commerce.dto.response.*;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.exception.AppException;
 import lombok.AccessLevel;
@@ -72,6 +67,60 @@ public class GhnService {
                     .bodyValue(request)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<GhnRawResponse<List<GhnCancelOrderResponse>>>() {
+                    })
+                    .block();
+
+            checkRaw(raw);
+
+            return raw.getData();
+        } catch (WebClientResponseException e) {
+            throw handleWebClientError(e);
+        }
+    }
+
+    public GhnExpectedDeliveryTimeResponse calculateExpectedDeliveryTime(GhnExpectedDeliveryTimeRequest request) {
+        try {
+            GhnRawResponse<GhnExpectedDeliveryTimeResponse> raw = ghnWebClient.post()
+                    .uri("/v2/shipping-order/leadtime")
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<GhnRawResponse<GhnExpectedDeliveryTimeResponse>>() {
+                    })
+                    .block();
+
+            checkRaw(raw);
+
+            return raw.getData();
+        } catch (WebClientResponseException e) {
+            throw handleWebClientError(e);
+        }
+    }
+
+    public List<GhnReturnOrderResponse> returnOrder(GhnReturnOrderRequest request) {
+        try {
+            GhnRawResponse<List<GhnReturnOrderResponse>> raw = ghnWebClient.post()
+                    .uri("/v2/switch-status/return")
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<GhnRawResponse<List<GhnReturnOrderResponse>>>() {
+                    })
+                    .block();
+
+            checkRaw(raw);
+
+            return raw.getData();
+        } catch (WebClientResponseException e) {
+            throw handleWebClientError(e);
+        }
+    }
+
+    public GhnOrderInfoResponse getOrderInfo(GhnOrderInfoRequest request) {
+        try {
+            GhnRawResponse<GhnOrderInfoResponse> raw = ghnWebClient.post()
+                    .uri("/v2/shipping-order/detail")
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<GhnRawResponse<GhnOrderInfoResponse>>() {
                     })
                     .block();
 
