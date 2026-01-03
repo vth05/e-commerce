@@ -24,15 +24,14 @@ public class GhnService {
 
     public GhnCalculateFeeResponse calculateFee(GhnCalculateFeeRequest request) {
         try {
-            GhnRawResponse<GhnCalculateFeeResponse> raw =
-                    ghnWebClient.post()
-                            .uri("/v2/shipping-order/fee")
-                            .bodyValue(request)
-                            .retrieve()
-                            // converts the GHN JSON response body into the structured Java object GhnRawResponse<GhnCalculateFeeResponse>
-                            .bodyToMono(new ParameterizedTypeReference<GhnRawResponse<GhnCalculateFeeResponse>>() {
-                            })
-                            .block();
+            GhnRawResponse<GhnCalculateFeeResponse> raw = ghnWebClient.post()
+                    .uri("/v2/shipping-order/fee")
+                    .bodyValue(request)
+                    .retrieve()
+                    // converts the GHN JSON response body into the structured Java object GhnRawResponse<GhnCalculateFeeResponse>
+                    .bodyToMono(new ParameterizedTypeReference<GhnRawResponse<GhnCalculateFeeResponse>>() {
+                    })
+                    .block();
 
             checkRaw(raw);
 

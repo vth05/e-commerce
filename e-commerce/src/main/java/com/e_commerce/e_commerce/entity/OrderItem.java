@@ -46,4 +46,8 @@ public class OrderItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     Order order;
+
+    String voucherCode;
+
+    BigDecimal discountAmount;
 }

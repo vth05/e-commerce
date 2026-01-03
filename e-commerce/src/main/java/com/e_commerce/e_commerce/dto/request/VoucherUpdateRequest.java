@@ -24,6 +24,12 @@ public class VoucherUpdateRequest {
     @Max(value = 100, message = "VOUCHER_DISCOUNT_PERCENT_INVALID")
     Integer discountPercent;
 
+    @DecimalMin(value = "0", message = "MIN_ORDER_VALUE_INVALID")
+    BigDecimal minOrderValue;
+
+    @DecimalMin(value = "0", message = "MAX_DISCOUNT_AMOUNT_INVALID")
+    BigDecimal maxDiscountAmount;
+
     @FutureOrPresent(message = "VOUCHER_VALID_FROM_INVALID")
     LocalDateTime validFrom;
 

@@ -20,6 +20,12 @@ public class ProductVariantResponse {
 
     BigDecimal weight;
 
+    BigDecimal length;
+
+    BigDecimal width;
+
+    BigDecimal height;
+
     long quantity;
 
     String color;

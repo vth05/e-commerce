@@ -1,15 +1,12 @@
 package com.e_commerce.e_commerce.entity;
 
 import com.e_commerce.e_commerce.enums.Category;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Data
@@ -28,6 +25,10 @@ public class Voucher {
 
     Integer discountPercent;
 
+    BigDecimal minOrderValue;
+
+    BigDecimal maxDiscountAmount;
+
     LocalDateTime validFrom;
 
     LocalDateTime validTo;
@@ -44,8 +45,4 @@ public class Voucher {
 
     @Builder.Default
     boolean active = true;
-
-    @OneToMany(mappedBy = "voucher")
-    @Builder.Default
-    List<Order> orders = new ArrayList<>();
 }

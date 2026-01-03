@@ -25,6 +25,12 @@ public class ProductVariant {
 
     BigDecimal weight;
 
+    BigDecimal length;
+
+    BigDecimal width;
+
+    BigDecimal height;
+
     long quantity;
 
     String color;

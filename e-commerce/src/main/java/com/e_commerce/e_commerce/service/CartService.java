@@ -22,8 +22,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Session;
-import org.hibernate.stat.Statistics;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +59,7 @@ public class CartService {
                     .userId(userId)
                     .cartStatus(CartStatus.ACTIVE)
                     .build();
-            // create cartId to find cartItem later
+            // create cart's id to find cart item later
             return cartRepository.save(newCart);
         });
 
@@ -71,7 +69,7 @@ public class CartService {
                     .productVariant(productVariant)
                     .quantity(0)
                     .build();
-            return newCartItem;
+            return cartItemRepository.save(newCartItem);
         });
         if (productVariant.getQuantity() < quantityFromRequest + cartItem.getQuantity()) {
             throw new AppException(ErrorCode.PRODUCT_VARIANT_INSUFFICIENT_STOCK);
@@ -80,11 +78,9 @@ public class CartService {
         // update quantity of cartItem
         cartItem.setQuantity(cartItem.getQuantity() + quantityFromRequest);
         cartItem.setPriceAtPurchase(productVariant.getPrice());
-        cartItemRepository.save(cartItem);
 
         // update updatedAt field (@LastModifiedDate doesn't work, I don't know, so I do it manually)
         cart.setUpdatedAt(LocalDateTime.now());
-        cartRepository.save(cart);
 
         List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
         return buildCartResponse(cart, cartItems);
@@ -101,12 +97,9 @@ public class CartService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
-        // soft delete cartItem
         cartItem.setActive(false);
-        cartItemRepository.save(cartItem);
 
         cart.setUpdatedAt(LocalDateTime.now());
-        cartRepository.save(cart);
 
         List<CartItem> cartItems = cartItemRepository.findAllByCartIdAndActiveTrue(cart.getId());
         return buildCartResponse(cart, cartItems);
@@ -126,13 +119,11 @@ public class CartService {
                     entityManager.detach(cartItems.get(j));
                 }
             }
-            CartItem cartItem = cartItems.get(i);
-            cartItem.setActive(false);
+            cartItems.get(i).setActive(false);
         }
         entityManager.flush();
 
         cart.setCartStatus(CartStatus.CANCELED);
-        cartRepository.save(cart);
     }
 
     public CartResponse getCurrentCart() {

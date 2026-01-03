@@ -61,10 +61,6 @@ public class Order {
     @JoinColumn(name = "cart_id")
     Cart cart;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "voucher_id")
-    Voucher voucher;
-
     @OneToMany(mappedBy = "order")
     @Builder.Default
     List<OrderItem> orderItems = new ArrayList<>();

@@ -22,4 +22,8 @@ public class OrderItemResponse {
     BigDecimal priceAtPurchase;
 
     long quantity;
+
+    String voucherCode;
+
+    BigDecimal discountAmount;
 }

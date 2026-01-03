@@ -20,6 +20,10 @@ public class VoucherResponse {
 
     Integer discountPercent;
 
+    BigDecimal minOrderValue;
+
+    BigDecimal maxDiscountAmount;
+
     LocalDateTime validFrom;
 
     LocalDateTime validTo;

@@ -1,11 +1,13 @@
 package com.e_commerce.e_commerce.dto.request;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class GhnCalculateFeeRequest {
     Integer service_id;
     String from_ward_code;

@@ -23,7 +23,6 @@ public class ExactlyOneOfValidator implements ConstraintValidator<ExactlyOneOf, 
         int count = 0;
         for (String fieldName : fields) {
             try {
-
                 Field field = object.getClass().getDeclaredField(fieldName);
                 field.setAccessible(true);
                 Object value = field.get(object);
@@ -35,6 +34,6 @@ public class ExactlyOneOfValidator implements ConstraintValidator<ExactlyOneOf, 
             }
         }
 
-        return count <= 1;
+        return count == 1;
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,8 +22,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, String> {
             select ci
             from CartItem ci
             join fetch ci.productVariant pv
-            join fetch pv.product p
-            where ci.cart.id = :cartId and ci.active = true
+            where ci.cart.id = :cartId and ci.active = true and ci.id in :cartItemIds
             """)
-    List<CartItem> findAllForCheckout(@Param("cartId") String cartId);
+    List<CartItem> findAllCartItemsFromRequest(@Param("cartId") String cartId, @Param("cartItemIds") Collection<String> cartItemIds);
 }

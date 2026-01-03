@@ -24,6 +24,15 @@ public class ProductVariantCreationRequest {
     @DecimalMin(value = "0", message = "PRODUCT_VARIANT_WEIGHT_INVALID")
     BigDecimal weight;
 
+    @DecimalMin(value = "0", message = "PRODUCT_VARIANT_LENGTH_INVALID")
+    BigDecimal length;
+
+    @DecimalMin(value = "0", message = "PRODUCT_VARIANT_WIDTH_INVALID")
+    BigDecimal width;
+
+    @DecimalMin(value = "0", message = "PRODUCT_VARIANT_HEIGHT_INVALID")
+    BigDecimal height;
+
     @NotNull(message = "PRODUCT_VARIANT_QUANTITY_REQUIRED")
     @Min(value = 0, message = "PRODUCT_VARIANT_QUANTITY_INVALID")
     Long quantity;

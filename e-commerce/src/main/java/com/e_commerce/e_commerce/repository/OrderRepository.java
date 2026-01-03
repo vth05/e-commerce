@@ -53,6 +53,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             order by total_spent desc
             limit :limit
             """, nativeQuery = true)
+    // native query => String status (not CheckoutStatus status)
     List<Object[]> findTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(
             @Param("status") String status,
             @Param("start") LocalDateTime start,

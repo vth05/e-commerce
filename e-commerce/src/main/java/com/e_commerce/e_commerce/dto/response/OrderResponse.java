@@ -39,7 +39,5 @@ public class OrderResponse {
 
     LocalDateTime updatedAt;
 
-    VoucherResponse voucher;
-
     List<OrderItemResponse> orderItems;
 }

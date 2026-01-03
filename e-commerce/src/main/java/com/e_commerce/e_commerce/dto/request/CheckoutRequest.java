@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -22,5 +25,16 @@ public class CheckoutRequest {
     @NotBlank(message = "PAYMENT_METHOD_REQUIRED")
     String paymentMethod;
 
-    String voucherCode;
+    List<String> cartItemIds;
+
+    // key is cart item id, value is voucher code
+    Map<String, String> cartItemIdToVoucherCodeMap;
+
+    Integer service_id;
+
+    String to_ward_code;
+
+    Integer to_district_id;
+
+    String shippingVoucherCode;
 }

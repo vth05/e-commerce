@@ -89,6 +89,14 @@ public enum ErrorCode {
     GHN_HTTP_ERROR(2001, "Failed to communicate with GHN API (HTTP Error)", HttpStatus.BAD_GATEWAY),
     GHN_EMPTY_RESPONSE_BODY(2002, "GHN API returned an empty response body", HttpStatus.BAD_GATEWAY),
     GHN_DATA_NULL(2003, "GHN API response 'data' field is null", HttpStatus.BAD_GATEWAY),
+    VOUCHER_NOT_ACTIVE(2004, "Voucher not active", HttpStatus.BAD_REQUEST),
+    CART_ITEM_NOT_IN_CART(2005, "Cart item does not belong to the current cart", HttpStatus.BAD_REQUEST),
+    MIN_ORDER_VALUE_REQUIRED(2006, "Minimum order value is required", HttpStatus.BAD_REQUEST),
+    MIN_ORDER_VALUE_INVALID(2007, "Minimum order value must be greater than or equal to 0", HttpStatus.BAD_REQUEST),
+    MAX_DISCOUNT_AMOUNT_INVALID(2008, "Maximum discount amount must be greater than or equal to 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_VARIANT_LENGTH_INVALID(2009, "Product variant length at least 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_VARIANT_WIDTH_INVALID(2010, "Product variant width at least 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_VARIANT_HEIGHT_INVALID(2011, "Product variant height at least 0", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

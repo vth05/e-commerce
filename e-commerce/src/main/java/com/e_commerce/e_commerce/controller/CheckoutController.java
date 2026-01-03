@@ -1,7 +1,9 @@
 package com.e_commerce.e_commerce.controller;
 
+import com.e_commerce.e_commerce.dto.request.CheckoutPreviewRequest;
 import com.e_commerce.e_commerce.dto.request.CheckoutRequest;
 import com.e_commerce.e_commerce.dto.response.ApiResponse;
+import com.e_commerce.e_commerce.dto.response.CheckoutPreviewResponse;
 import com.e_commerce.e_commerce.dto.response.OrderResponse;
 import com.e_commerce.e_commerce.enums.CheckoutStatus;
 import com.e_commerce.e_commerce.service.CheckoutService;
@@ -57,6 +59,13 @@ public class CheckoutController {
     public ApiResponse<OrderResponse> getOrderById(@PathVariable String orderId) {
         return ApiResponse.<OrderResponse>builder()
                 .result(checkoutService.getOrderById(orderId))
+                .build();
+    }
+
+    @PostMapping("/preview")
+    public ApiResponse<CheckoutPreviewResponse> checkoutPreview(@RequestBody CheckoutPreviewRequest request) {
+        return ApiResponse.<CheckoutPreviewResponse>builder()
+                .result(checkoutService.checkoutPreview(request))
                 .build();
     }
 }

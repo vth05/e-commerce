@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -23,6 +24,13 @@ public class VoucherCreationRequest {
     @Min(value = 1, message = "VOUCHER_DISCOUNT_PERCENT_INVALID")
     @Max(value = 100, message = "VOUCHER_DISCOUNT_PERCENT_INVALID")
     Integer discountPercent;
+
+    @NotNull(message = "MIN_ORDER_VALUE_REQUIRED")
+    @DecimalMin(value = "0", message = "MIN_ORDER_VALUE_INVALID")
+    BigDecimal minOrderValue;
+
+    @DecimalMin(value = "0", message = "MAX_DISCOUNT_AMOUNT_INVALID")
+    BigDecimal maxDiscountAmount;
 
     @NotNull(message = "VOUCHER_VALID_FROM_REQUIRED")
     @FutureOrPresent(message = "VOUCHER_VALID_FROM_INVALID")
