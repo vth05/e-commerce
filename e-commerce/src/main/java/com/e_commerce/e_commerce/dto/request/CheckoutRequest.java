@@ -37,4 +37,6 @@ public class CheckoutRequest {
     Integer to_district_id;
 
     String shippingVoucherCode;
+
+    String required_note;
 }

@@ -1,10 +1,10 @@
 package com.e_commerce.e_commerce.service;
 
-import com.e_commerce.e_commerce.dto.request.CheckoutPreviewRequest;
-import com.e_commerce.e_commerce.dto.request.CheckoutRequest;
-import com.e_commerce.e_commerce.dto.request.GhnCalculateFeeRequest;
+import com.e_commerce.e_commerce.dto.request.*;
+import com.e_commerce.e_commerce.dto.response.CheckoutInternalResponse;
 import com.e_commerce.e_commerce.dto.response.CheckoutPreviewResponse;
 import com.e_commerce.e_commerce.dto.response.OrderResponse;
+import com.e_commerce.e_commerce.dto.response.ShippingFeeCalculationResult;
 import com.e_commerce.e_commerce.entity.*;
 import com.e_commerce.e_commerce.enums.CartStatus;
 import com.e_commerce.e_commerce.enums.CheckoutStatus;
@@ -13,16 +13,12 @@ import com.e_commerce.e_commerce.enums.PaymentMethod;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.OrderMapper;
 import com.e_commerce.e_commerce.repository.*;
+import com.e_commerce.e_commerce.util.CheckoutUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,97 +42,42 @@ public class CheckoutService {
     OrderMapper orderMapper;
     CartItemRepository cartItemRepository;
     GhnService ghnService;
-    @NonFinal
-    @Value("${spring.jpa.properties.hibernate.jdbc.batch_size}")
-    int batchSize;
-    @PersistenceContext
-    EntityManager entityManager;
+    CheckoutUtils checkoutUtils;
+    CheckoutTransactionalService checkoutTransactionalService;
 
-    @Transactional
     public OrderResponse checkout(CheckoutRequest request) {
-        String userId = SecurityUtils.getUserIdFromAuthentication();
-        Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
-        Order order = Order.builder()
-                .cart(cart)
-                .userId(userId)
-                .checkoutStatus(CheckoutStatus.PENDING)
-                .build();
-        // create order's id (= cart's id)
-        order = orderRepository.save(order);
-        BigDecimal totalDiscount = BigDecimal.ZERO;
-        BigDecimal subtotal = BigDecimal.ZERO;
-        List<String> cartItemIdsFromRequest = request.getCartItemIds();
-        List<CartItem> cartItemsFromRequest = cartItemRepository.findAllCartItemsFromRequest(cart.getId(), cartItemIdsFromRequest);
-        if (cartItemIdsFromRequest.size() != cartItemsFromRequest.size()) {
-            throw new AppException(ErrorCode.CART_ITEM_NOT_IN_CART);
+        CheckoutInternalResponse response = checkoutTransactionalService.checkoutInternal(request);
+        Order order = response.order();
+        if (checkoutUtils.parsePaymentMethod(request.getPaymentMethod()) == PaymentMethod.COD) {
+            try {
+                ShippingFeeCalculationResult shippingFeeCalculationResult = response.shippingFeeCalculationResult();
+                GhnCreateOrderRequest ghnCreateOrderRequest = GhnCreateOrderRequest.builder()
+                        .from_name("MyShop")
+                        .to_name(request.getReceiverName())
+                        .from_phone("0902163987")
+                        .to_phone(request.getReceiverPhone())
+                        .from_address("53E đường số 8, Phường Bình Trị Đông, Quận Bình Tân, Hồ Chí Minh")
+                        .to_address(request.getShippingAddress())
+                        .from_ward_name("Phường Bình Trị Đông")
+                        .from_district_name("Quận Bình Tân")
+                        .from_province_name("Hồ Chí Minh")
+                        .to_ward_code(request.getTo_ward_code())
+                        .to_district_id(request.getTo_district_id())
+                        .weight(shippingFeeCalculationResult.weightInGrams())
+                        .length(shippingFeeCalculationResult.lengthInCm())
+                        .width(shippingFeeCalculationResult.widthInCm())
+                        .height(shippingFeeCalculationResult.heightInCm())
+                        .service_type_id(2)
+                        .payment_type_id(2)
+                        .required_note(request.getRequired_note())
+                        .items(response.items())
+                        .build();
+                ghnService.createOrder(ghnCreateOrderRequest);
+            } catch (Exception e) {
+                order.setCheckoutStatus(CheckoutStatus.CREATE_SHIPPING_ORDER_FAILED);
+                orderRepository.save(order);
+            }
         }
-        Map<String, String> cartItemToVoucherCodeMap = Optional.ofNullable(request.getCartItemIdToVoucherCodeMap()).orElse(Collections.emptyMap());
-        List<Voucher> selectedVouchers = voucherRepository.findAllByCodeIn(cartItemToVoucherCodeMap.values());
-        Map<String, Voucher> voucherLookup = selectedVouchers.stream().collect(Collectors.toMap(voucher -> voucher.getCode(), voucher -> voucher));
-        List<Object> entitiesToDetach = new ArrayList<>();
-        for (int i = 0; i < cartItemsFromRequest.size(); i++) {
-            if (i > 0 && i % batchSize == 0) {
-                entityManager.flush();
-                for (Object object : entitiesToDetach) {
-                    entityManager.detach(object);
-                }
-                entitiesToDetach.clear();
-            }
-            CartItem cartItem = cartItemsFromRequest.get(i);
-            long cartItemQuantity = cartItem.getQuantity();
-            ProductVariant productVariant = cartItem.getProductVariant();
-            long productVariantQuantity = productVariant.getQuantity();
-            if (productVariantQuantity < cartItemQuantity) {
-                throw new AppException(ErrorCode.PRODUCT_VARIANT_INSUFFICIENT_STOCK);
-            }
-            productVariant.setQuantity(productVariantQuantity - cartItemQuantity);
-            entitiesToDetach.add(productVariant);
-            BigDecimal currentPrice = productVariant.getPrice();
-            Product product = productVariant.getProduct();
-            OrderItem orderItem = OrderItem.builder()
-                    .productName(product.getName())
-                    .productId(product.getId())
-                    .productVariantId(productVariant.getId())
-                    .priceAtPurchase(currentPrice)
-                    .quantity(cartItemQuantity)
-                    .order(order)
-                    .build();
-            BigDecimal cartItemSubtotal = currentPrice.multiply(BigDecimal.valueOf(cartItemQuantity));
-            String voucherCode = cartItemToVoucherCodeMap.get(cartItem.getId());
-            if (voucherCode != null) {
-                Voucher voucher = voucherLookup.get(voucherCode);
-                // if this voucherCode doesn't exist in database
-                if (voucher == null) {
-                    throw new AppException(ErrorCode.VOUCHER_CODE_NOT_EXISTED);
-                } else {
-                    validateVoucher(voucher);
-                    BigDecimal discount = calculateCartItemDiscount(voucher, cartItemSubtotal);
-                    totalDiscount = totalDiscount.add(discount);
-                    voucher.setUsageCount(voucher.getUsageCount() + 1);
-                    orderItem.setVoucherCode(voucherCode);
-                    orderItem.setDiscountAmount(discount);
-                }
-            }
-            subtotal = subtotal.add(cartItemSubtotal);
-            entityManager.persist(orderItem);
-            entitiesToDetach.add(orderItem);
-            // for response
-            order.getOrderItems().add(orderItem);
-        }
-        entityManager.flush();
-        BigDecimal originalShippingFee = calculateOriginalShippingFee(subtotal, request.getService_id(), request.getTo_ward_code(), request.getTo_district_id(), cartItemsFromRequest);
-        String shippingVoucherCode = request.getShippingVoucherCode();
-        BigDecimal shippingDiscount = calculateShippingDiscount(subtotal, originalShippingFee, shippingVoucherCode);
-        BigDecimal shippingFee = originalShippingFee.subtract(shippingDiscount);
-        cart.setCartStatus(CartStatus.CHECKED_OUT);
-        order.setReceiverName(request.getReceiverName());
-        order.setReceiverPhone(request.getReceiverPhone());
-        order.setShippingAddress(request.getShippingAddress());
-        order.setPaymentMethod(parsePaymentMethod(request.getPaymentMethod()));
-        order.setSubtotal(subtotal);
-        order.setShippingFee(shippingFee);
-        order.setDiscount(totalDiscount);
-        order.setTotalPrice(subtotal.subtract(totalDiscount).add(shippingFee).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP));
         return orderMapper.toOrderResponse(order);
     }
 
@@ -156,7 +96,8 @@ public class CheckoutService {
         BigDecimal totalDiscount = BigDecimal.ZERO;
         BigDecimal subtotal = BigDecimal.ZERO;
         for (CartItem cartItem : cartItemsFromRequest) {
-            BigDecimal currentPrice = cartItem.getProductVariant().getPrice();
+            ProductVariant productVariant = cartItem.getProductVariant();
+            BigDecimal currentPrice = productVariant.getPrice();
             String voucherCode = cartItemToVoucherCodeMap.get(cartItem.getId());
             BigDecimal cartItemSubtotal = currentPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             if (voucherCode != null) {
@@ -165,16 +106,18 @@ public class CheckoutService {
                 if (voucher == null) {
                     throw new AppException(ErrorCode.VOUCHER_CODE_NOT_EXISTED);
                 } else {
-                    validateVoucher(voucher);
-                    BigDecimal discount = calculateCartItemDiscount(voucher, cartItemSubtotal);
-                    totalDiscount = totalDiscount.add(discount);
+                    if (checkoutUtils.isVoucherApplicableToProduct(voucher, productVariant.getProduct())) {
+                        BigDecimal discount = checkoutUtils.calculateCartItemDiscount(voucher, cartItemSubtotal);
+                        totalDiscount = totalDiscount.add(discount);
+                    }
                 }
             }
             subtotal = subtotal.add(cartItemSubtotal);
         }
-        BigDecimal originalShippingFee = calculateOriginalShippingFee(subtotal, request.getService_id(), request.getTo_ward_code(), request.getTo_district_id(), cartItemsFromRequest);
+        ShippingFeeCalculationResult shippingFeeCalculationResult = checkoutUtils.calculateShippingFeeAndDimensions(subtotal, request.getService_id(), request.getTo_ward_code(), request.getTo_district_id(), cartItemsFromRequest);
+        BigDecimal originalShippingFee = shippingFeeCalculationResult.originalShippingFee();
         String shippingVoucherCode = request.getShippingVoucherCode();
-        BigDecimal shippingDiscount = calculateShippingDiscount(subtotal, originalShippingFee, shippingVoucherCode);
+        BigDecimal shippingDiscount = checkoutUtils.calculateShippingDiscount(subtotal, originalShippingFee, shippingVoucherCode);
         return CheckoutPreviewResponse.builder()
                 .subtotal(subtotal)
                 .discount(totalDiscount)
@@ -182,87 +125,6 @@ public class CheckoutService {
                 .shippingDiscount(shippingDiscount)
                 .totalPrice(subtotal.subtract(totalDiscount).add(originalShippingFee.subtract(shippingDiscount)).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP))
                 .build();
-    }
-
-    private void validateVoucher(Voucher voucher) {
-        if (voucher.getUsageCount() >= voucher.getUsageLimit()) {
-            throw new AppException(ErrorCode.VOUCHER_OUT_OF);
-        }
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(voucher.getValidFrom())) {
-            throw new AppException(ErrorCode.VOUCHER_NOT_ACTIVE);
-        }
-        if (now.isAfter(voucher.getValidTo())) {
-            throw new AppException(ErrorCode.VOUCHER_EXPIRED);
-        }
-    }
-
-    private BigDecimal calculateCartItemDiscount(Voucher voucher, BigDecimal cartItemSubtotal) {
-        BigDecimal discount = BigDecimal.ZERO;
-        if (voucher.getDiscountAmount() != null && cartItemSubtotal.compareTo(voucher.getMinOrderValue()) >= 0) {
-            discount = BigDecimal.valueOf(voucher.getDiscountAmount());
-            if (discount.compareTo(cartItemSubtotal) > 0) {
-                discount = cartItemSubtotal;
-            }
-        } else if (voucher.getDiscountPercent() != null && cartItemSubtotal.compareTo(voucher.getMinOrderValue()) >= 0) {
-            discount = cartItemSubtotal.multiply(BigDecimal.valueOf(voucher.getDiscountPercent()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
-            if (discount.compareTo(voucher.getMaxDiscountAmount()) > 0) {
-                discount = voucher.getMaxDiscountAmount();
-            }
-        }
-        return discount;
-    }
-
-    private BigDecimal calculateOriginalShippingFee(BigDecimal subtotal, Integer serviceId, String toWardCode, Integer toDistrictId, List<CartItem> cartItemsFromRequest) {
-        BigDecimal totalWeight = BigDecimal.ZERO;
-        BigDecimal length = BigDecimal.ZERO;
-        BigDecimal width = BigDecimal.ZERO;
-        BigDecimal totalHeight = BigDecimal.ZERO;
-        BigDecimal insuranceValue = subtotal;
-        for (CartItem cartItem : cartItemsFromRequest) {
-            ProductVariant productVariant = cartItem.getProductVariant();
-            totalWeight = totalWeight.add(safe(productVariant.getWeight()).multiply(BigDecimal.valueOf(cartItem.getQuantity())));
-            length = length.max(safe(productVariant.getLength()));
-            width = width.max(safe(productVariant.getWidth()));
-            totalHeight = totalHeight.max(safe(productVariant.getHeight()));
-        }
-        GhnCalculateFeeRequest ghnCalculateFeeRequest = GhnCalculateFeeRequest.builder()
-                .service_id(serviceId)
-                .from_ward_code("21906")
-                .to_ward_code(toWardCode)
-                .from_district_id(1458)
-                .to_district_id(toDistrictId)
-                .weight(totalWeight.setScale(0, RoundingMode.CEILING).intValueExact())
-                .length(length.setScale(0, RoundingMode.CEILING).intValueExact())
-                .width(width.setScale(0, RoundingMode.CEILING).intValueExact())
-                .height(totalHeight.setScale(0, RoundingMode.CEILING).intValueExact())
-                .insurance_value(insuranceValue.setScale(0, RoundingMode.CEILING).intValueExact())
-                .build();
-        return BigDecimal.valueOf(ghnService.calculateFee(ghnCalculateFeeRequest).getTotal());
-    }
-
-    private BigDecimal safe(BigDecimal val) {
-        return val == null ? BigDecimal.ZERO : val;
-    }
-
-    private BigDecimal calculateShippingDiscount(BigDecimal subtotal, BigDecimal originalShippingFee, String shippingVoucherCode) {
-        BigDecimal shippingDiscount = BigDecimal.ZERO;
-        if (shippingVoucherCode != null) {
-            Voucher shippingVoucher = voucherRepository.findByCode(shippingVoucherCode).orElseThrow(() -> new AppException(ErrorCode.VOUCHER_CODE_NOT_EXISTED));
-            validateVoucher(shippingVoucher);
-            if (shippingVoucher.getDiscountAmount() != null && subtotal.compareTo(shippingVoucher.getMinOrderValue()) >= 0) {
-                shippingDiscount = BigDecimal.valueOf(shippingVoucher.getDiscountAmount());
-            } else if (shippingVoucher.getDiscountPercent() != null && subtotal.compareTo(shippingVoucher.getMinOrderValue()) >= 0) {
-                shippingDiscount = originalShippingFee.multiply(BigDecimal.valueOf(shippingVoucher.getDiscountPercent()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
-                if (shippingDiscount.compareTo(shippingVoucher.getMaxDiscountAmount()) > 0) {
-                    shippingDiscount = shippingVoucher.getMaxDiscountAmount();
-                }
-            }
-            if (shippingDiscount.compareTo(originalShippingFee) > 0) {
-                shippingDiscount = originalShippingFee;
-            }
-        }
-        return shippingDiscount;
     }
 
     public Page<OrderResponse> getOrderHistoryOfCurrentUser(CheckoutStatus checkoutStatus, int page, int size, String sortBy, String sortDir) {
@@ -299,13 +161,5 @@ public class CheckoutService {
         String userId = SecurityUtils.getUserIdFromAuthentication();
         Order order = orderRepository.findByIdAndUserId(orderId, userId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
         return orderMapper.toOrderResponse(order);
-    }
-
-    private PaymentMethod parsePaymentMethod(String paymentMethod) {
-        try {
-            return PaymentMethod.valueOf(paymentMethod.toUpperCase());
-        } catch (IllegalArgumentException exception) {
-            throw new AppException(ErrorCode.INVALID_PAYMENT_METHOD);
-        }
     }
 }
