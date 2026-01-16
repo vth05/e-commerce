@@ -61,7 +61,6 @@ public class PaymentController {
 //        if (bankCode != null && !bankCode.isEmpty()) {
 //            vnp_Params.put("vnp_BankCode", bankCode);
 //        }
-//        vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
         vnp_Params.put("vnp_OrderType", orderType);
@@ -75,7 +74,6 @@ public class PaymentController {
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", vnPayConfig.vnp_ReturnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
-//        vnp_Params.put("vnp_IpAddr", "13.160.92.202");
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");

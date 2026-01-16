@@ -135,9 +135,9 @@ public class ProductVariantService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ProductImageResponse uploadVariantImage(String productVariantId, MultipartFile file) throws IOException {
-        String imageUrl = productVariantImageService.uploadImage(file);
-
         ProductVariant variant = productVariantRepository.findById(productVariantId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
+
+        String imageUrl = productVariantImageService.uploadImage(file);
 
         ProductImage newImage = ProductImage.builder()
                 .imageUrl(imageUrl)

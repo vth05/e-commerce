@@ -21,7 +21,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
             select new com.e_commerce.e_commerce.dto.response.ProductRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))
             from OrderItem oi
             join oi.order o
-            where o.createdAt >= :start and o.createdAt <= :end and o.checkoutStatus = :status
+            where o.createdAt between :start and :end and o.checkoutStatus = :status
             group by oi.productName
             """)
     List<ProductRevenueResponse> findRevenueByProductAndDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
@@ -30,7 +30,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
             select new com.e_commerce.e_commerce.dto.response.TopProductsByRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))
             from OrderItem oi
             join oi.order o
-            where o.createdAt >= :start and o.createdAt <= :end and o.checkoutStatus = :status
+            where o.createdAt between :start and :end and o.checkoutStatus = :status
             group by oi.productName
             order by sum(oi.priceAtPurchase * oi.quantity) desc
             """)
@@ -40,7 +40,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
             select new com.e_commerce.e_commerce.dto.response.TopProductsByQuantitySoldResponse(oi.productName, sum(oi.quantity))
             from OrderItem oi
             join oi.order o
-            where o.createdAt >= :start and o.createdAt <= :end and o.checkoutStatus = :status
+            where o.createdAt between :start and :end and o.checkoutStatus = :status
             group by oi.productName
             order by sum(oi.quantity) desc
             """)
@@ -61,7 +61,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
                 group by product_id
             ) pv on oi.product_id = pv.product_id
             join orders o on oi.order_id = o.cart_id
-            where oi.created_at >= :start and oi.created_at <= :end and o.checkout_status in ('PAID', 'PENDING')
+            where o.created_at between :start and :end and o.checkout_status in ('PAID', 'PENDING')
             group by oi.product_id, oi.product_name, pv.displayPrice, pv.stockQuantity
             order by quantitySold desc
             limit :limit

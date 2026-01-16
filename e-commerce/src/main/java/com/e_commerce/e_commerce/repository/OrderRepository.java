@@ -31,29 +31,29 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     @Query("""
             select sum(o.totalPrice)
             from Order o
-            where o.checkoutStatus = :status and o.createdAt >= :start and o.createdAt <= :end
+            where o.createdAt between :start and :end and o.checkoutStatus = :status
             """)
     BigDecimal findTotalRevenueByDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("""
             select new com.e_commerce.e_commerce.dto.response.RevenueByDate(cast(o.createdAt as LocalDate), sum(o.totalPrice))
             from Order o
-            where o.checkoutStatus = :status and o.createdAt >= :start and o.createdAt <= :end
+            where o.createdAt between :start and :end and o.checkoutStatus = :status
             group by function('DATE', o.createdAt)
             order by function('DATE', o.createdAt)
             """)
     List<RevenueByDate> findDailyRevenueByDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query(value = """
-            select u.id, concat(u.first_name, ' ', u.last_name) as full_name, u.email, u.phone_number, sum(o.total_price) as total_spent, count(*) as total_orders
+            select u.id, concat(u.first_name, ' ', u.last_name) as full_name, u.email, u.phone_number, sum(o.total_price) as total_spent, count(o.cart_id) as total_orders
             from orders o
             join user u on o.user_id = u.id
-            where u.active = :active and o.checkout_status = :status and o.created_at between :start and :end
+            where o.created_at between :start and :end and o.checkout_status = :status and u.active = :active
             group by u.id, concat(u.first_name, ' ', u.last_name), u.email, u.phone_number
             order by total_spent desc
             limit :limit
             """, nativeQuery = true)
-    // native query => String status (not CheckoutStatus status)
+        // native query => String status (not CheckoutStatus status)
     List<Object[]> findTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(
             @Param("status") String status,
             @Param("start") LocalDateTime start,

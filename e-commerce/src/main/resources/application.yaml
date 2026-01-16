@@ -32,6 +32,14 @@ spring:
           google:
             client-id: 213660715303-8kdmis4acl8l0omrqtebrd2v3ivd5hb7.apps.googleusercontent.com
             client-secret: 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
+  ai:
+    openai:
+      api-key: ${GEMINI_API_KEY}
+      chat:
+        base-url: https://generativelanguage.googleapis.com/v1beta/openai/
+        completions-path: chat/completions
+        options:
+          model: gemini-2.5-flash
 
 jwt:
   signerKey: "8591f80b80ac9777c53927e02c6cd5e98f4ed5782999c1ea40cbc2bb684806f1"
