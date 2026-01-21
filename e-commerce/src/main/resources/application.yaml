@@ -41,6 +41,8 @@ spring:
         options:
           model: gemini-2.5-flash
 
+debug: true
+
 jwt:
   signerKey: "8591f80b80ac9777c53927e02c6cd5e98f4ed5782999c1ea40cbc2bb684806f1"
   valid-duration: 36000
