@@ -28,6 +28,7 @@ public class IngestionService implements CommandLineRunner {
         List<Document> chunks = textSplitter.apply(documents);
         for (int i = 0; i < chunks.size(); i++) {
             Document chunk = chunks.get(i);
+            // ensure deterministic IDs for idempotent updates
             String productId = chunk.getMetadata().get("parent_document_id") + "-chunk-" + chunk.getMetadata().get("chunk_index");
             chunks.set(i, new Document(
                     productId,

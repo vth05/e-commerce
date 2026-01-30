@@ -43,8 +43,13 @@ spring:
 
 debug: true
 
+mistral:
+  api:
+    base-url: https://api.mistral.ai
+    key: ${MISTRAL_API_KEY}
+
 jwt:
-  signerKey: "8591f80b80ac9777c53927e02c6cd5e98f4ed5782999c1ea40cbc2bb684806f1"
+  signerKey: ${SIGNER_KEY}
   valid-duration: 36000
   refreshable-duration: 360000
 

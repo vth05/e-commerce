@@ -9,6 +9,7 @@ import org.springframework.ai.mistralai.MistralAiEmbeddingOptions;
 import org.springframework.ai.mistralai.api.MistralAiApi;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.redis.RedisVectorStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -20,11 +21,13 @@ import redis.clients.jedis.JedisPooled;
 
 @Configuration
 public class AiConfig {
+    @Value("${mistral.api.key}")
+    String apiKey;
+    @Value("${mistral.api.base-url}")
+    String baseUrl;
+
     @Bean
     public MistralAiApi mistralAiApi(RestClient.Builder restClientBuilder, WebClient.Builder webClientBuilder) {
-        String apiKey = "adjMQ1tAwhPUJu5HWEVKgdjbsJqdGrFU";
-        String baseUrl = "https://api.mistral.ai";
-
         return new MistralAiApi(
                 baseUrl,
                 apiKey,
