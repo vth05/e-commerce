@@ -14,6 +14,7 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.OrderMapper;
 import com.e_commerce.e_commerce.repository.*;
 import com.e_commerce.e_commerce.util.CheckoutUtils;
+import com.e_commerce.e_commerce.util.ParseUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class CheckoutService {
     public OrderResponse checkout(CheckoutRequest request) {
         CheckoutInternalResponse response = checkoutTransactionalService.checkoutInternal(request);
         Order order = response.order();
-        if (checkoutUtils.parsePaymentMethod(request.getPaymentMethod()) == PaymentMethod.COD) {
+        if (ParseUtils.parsePaymentMethod(request.getPaymentMethod()) == PaymentMethod.COD) {
             try {
                 ShippingFeeCalculationResult shippingFeeCalculationResult = response.shippingFeeCalculationResult();
                 GhnCreateOrderRequest ghnCreateOrderRequest = GhnCreateOrderRequest.builder()

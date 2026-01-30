@@ -7,7 +7,6 @@ import com.e_commerce.e_commerce.entity.Product;
 import com.e_commerce.e_commerce.entity.ProductVariant;
 import com.e_commerce.e_commerce.entity.Voucher;
 import com.e_commerce.e_commerce.enums.ErrorCode;
-import com.e_commerce.e_commerce.enums.PaymentMethod;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.repository.VoucherRepository;
 import com.e_commerce.e_commerce.service.GhnService;
@@ -51,14 +50,6 @@ public class CheckoutUtils {
         }
         validateVoucher(voucher);
         return true;
-    }
-
-    public PaymentMethod parsePaymentMethod(String paymentMethod) {
-        try {
-            return PaymentMethod.valueOf(paymentMethod.toUpperCase());
-        } catch (IllegalArgumentException exception) {
-            throw new AppException(ErrorCode.INVALID_PAYMENT_METHOD);
-        }
     }
 
     public BigDecimal calculateCartItemDiscount(Voucher voucher, BigDecimal cartItemSubtotal) {

@@ -14,6 +14,7 @@ import com.e_commerce.e_commerce.repository.CartRepository;
 import com.e_commerce.e_commerce.repository.OrderRepository;
 import com.e_commerce.e_commerce.repository.VoucherRepository;
 import com.e_commerce.e_commerce.util.CheckoutUtils;
+import com.e_commerce.e_commerce.util.ParseUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -133,7 +134,7 @@ public class CheckoutTransactionalService {
         order.setReceiverName(request.getReceiverName());
         order.setReceiverPhone(request.getReceiverPhone());
         order.setShippingAddress(request.getShippingAddress());
-        order.setPaymentMethod(checkoutUtils.parsePaymentMethod(request.getPaymentMethod()));
+        order.setPaymentMethod(ParseUtils.parsePaymentMethod(request.getPaymentMethod()));
         order.setSubtotal(subtotal);
         order.setShippingFee(shippingFee);
         order.setDiscount(totalDiscount);

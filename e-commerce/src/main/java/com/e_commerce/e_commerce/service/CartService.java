@@ -12,7 +12,6 @@ import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.repository.CartItemRepository;
 import com.e_commerce.e_commerce.repository.CartRepository;
 import com.e_commerce.e_commerce.repository.ProductVariantRepository;
-import com.e_commerce.e_commerce.util.CartUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -158,10 +157,16 @@ public class CartService {
                 .id(cart.getId())
                 .userId(cart.getUserId())
                 .cartStatus(String.valueOf(cart.getCartStatus()))
-                .totalPrice(CartUtils.calculateTotalPrice(cartItems))
+                .totalPrice(calculateTotalPrice(cartItems))
                 .createdAt(cart.getCreatedAt())
                 .updatedAt(cart.getUpdatedAt())
                 .cartItems(cartItemListToCartItemResponseList(cartItems))
                 .build();
+    }
+
+    private BigDecimal calculateTotalPrice(List<CartItem> cartItems) {
+        return cartItems.stream()
+                .map(cartItem -> cartItem.getPriceAtPurchase().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

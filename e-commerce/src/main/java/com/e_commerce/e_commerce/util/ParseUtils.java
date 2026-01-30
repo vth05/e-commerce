@@ -3,6 +3,7 @@ package com.e_commerce.e_commerce.util;
 import com.e_commerce.e_commerce.enums.Category;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.enums.Gender;
+import com.e_commerce.e_commerce.enums.PaymentMethod;
 import com.e_commerce.e_commerce.exception.AppException;
 
 public class ParseUtils {
@@ -19,6 +20,14 @@ public class ParseUtils {
             return Category.valueOf(categoryStr.toUpperCase());
         } catch (IllegalArgumentException exception) {
             throw new AppException(ErrorCode.INVALID_CATEGORY);
+        }
+    }
+
+    public static PaymentMethod parsePaymentMethod(String paymentMethod) {
+        try {
+            return PaymentMethod.valueOf(paymentMethod.toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            throw new AppException(ErrorCode.INVALID_PAYMENT_METHOD);
         }
     }
 }
