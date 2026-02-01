@@ -1,7 +1,6 @@
 package com.e_commerce.e_commerce.repository;
 
 import com.e_commerce.e_commerce.dto.response.RevenueByDate;
-import com.e_commerce.e_commerce.dto.response.TopCustomersResponse;
 import com.e_commerce.e_commerce.entity.Order;
 import com.e_commerce.e_commerce.enums.CheckoutStatus;
 import org.springframework.data.domain.Page;
@@ -52,6 +51,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             group by u.id, concat(u.first_name, ' ', u.last_name), u.email, u.phone_number
             order by total_spent desc
             limit :limit
+            offset :offset
             """, nativeQuery = true)
         // native query => String status (not CheckoutStatus status)
     List<Object[]> findTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(
@@ -59,6 +59,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
             @Param("active") boolean active,
+            @Param("offset") int offset,
             @Param("limit") int limit
     );
 }

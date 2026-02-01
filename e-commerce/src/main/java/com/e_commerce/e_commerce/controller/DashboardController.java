@@ -35,13 +35,15 @@ public class DashboardController {
     }
 
     @GetMapping("/revenue/products")
-    ApiResponse<List<ProductRevenueResponse>> getRevenueByProductAndDateRangeAndCheckoutStatus(
+    ApiResponse<Page<ProductRevenueResponse>> getRevenueByProductAndDateRangeAndCheckoutStatus(
             @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int limit
     ) {
-        return ApiResponse.<List<ProductRevenueResponse>>builder()
-                .result(dashboardService.getRevenueByProductAndDateRangeAndCheckoutStatus(status, start, end))
+        return ApiResponse.<Page<ProductRevenueResponse>>builder()
+                .result(dashboardService.getRevenueByProductAndDateRangeAndCheckoutStatus(status, start, end, page, limit))
                 .build();
     }
 
@@ -50,10 +52,11 @@ public class DashboardController {
             @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int limit
     ) {
         return ApiResponse.<Page<TopProductsByRevenueResponse>>builder()
-                .result(dashboardService.getTopProductsByRevenueAndDateRangeAndCheckoutStatus(status, start, end, limit))
+                .result(dashboardService.getTopProductsByRevenueAndDateRangeAndCheckoutStatus(status, start, end, page, limit))
                 .build();
     }
 
@@ -62,10 +65,11 @@ public class DashboardController {
             @RequestParam(required = false) CheckoutStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int limit
     ) {
         return ApiResponse.<Page<TopProductsByQuantitySoldResponse>>builder()
-                .result(dashboardService.getTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(status, start, end, limit))
+                .result(dashboardService.getTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(status, start, end, page, limit))
                 .build();
     }
 
@@ -75,10 +79,22 @@ public class DashboardController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "true") boolean active,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int limit
     ) {
         return ApiResponse.<List<TopCustomersResponse>>builder()
-                .result(dashboardService.getTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(status, start, end, active, limit))
+                .result(dashboardService.getTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(status, start, end, active, page, limit))
+                .build();
+    }
+
+    @GetMapping("/product-variants/low-stock")
+    public ApiResponse<Page<ProductVariantLowStockResponse>> getProductVariantsLowInStock(
+            @RequestParam(defaultValue = "10") int threshold,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int limit
+    ) {
+        return ApiResponse.<Page<ProductVariantLowStockResponse>>builder()
+                .result(dashboardService.getProductVariantsLowInStock(threshold, page, limit))
                 .build();
     }
 }

@@ -18,16 +18,16 @@ import java.util.List;
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
     @Query("""
-            select new com.e_commerce.e_commerce.dto.response.ProductRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))
+            select new com.e_commerce.e_commerce.dto.response.ProductRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity - oi.discountAmount))
             from OrderItem oi
             join oi.order o
             where o.createdAt between :start and :end and o.checkoutStatus = :status
             group by oi.productName
             """)
-    List<ProductRevenueResponse> findRevenueByProductAndDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    Page<ProductRevenueResponse> findRevenueByProductAndDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
 
     @Query("""
-            select new com.e_commerce.e_commerce.dto.response.TopProductsByRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity))
+            select new com.e_commerce.e_commerce.dto.response.TopProductsByRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity - oi.discountAmount))
             from OrderItem oi
             join oi.order o
             where o.createdAt between :start and :end and o.checkoutStatus = :status
