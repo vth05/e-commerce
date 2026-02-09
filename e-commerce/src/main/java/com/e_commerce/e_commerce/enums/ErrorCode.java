@@ -97,6 +97,11 @@ public enum ErrorCode {
     PRODUCT_VARIANT_LENGTH_INVALID(2009, "Product variant length at least 0", HttpStatus.BAD_REQUEST),
     PRODUCT_VARIANT_WIDTH_INVALID(2010, "Product variant width at least 0", HttpStatus.BAD_REQUEST),
     PRODUCT_VARIANT_HEIGHT_INVALID(2011, "Product variant height at least 0", HttpStatus.BAD_REQUEST),
+    PRODUCT_REVIEW_NOT_EXISTED(3001, "Product review does not already exist", HttpStatus.BAD_REQUEST),
+    PRODUCT_ID_REQUIRED(3002, "Product ID cannot be blank", HttpStatus.BAD_REQUEST),
+    RATING_REQUIRED(3003, "Rating is required", HttpStatus.BAD_REQUEST),
+    RATING_MIN_INVALID(3004, "Rating must be at least 1", HttpStatus.BAD_REQUEST),
+    RATING_MAX_INVALID(3005, "Rating cannot exceed 5", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
