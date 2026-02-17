@@ -102,6 +102,16 @@ public enum ErrorCode {
     RATING_REQUIRED(3003, "Rating is required", HttpStatus.BAD_REQUEST),
     RATING_MIN_INVALID(3004, "Rating must be at least 1", HttpStatus.BAD_REQUEST),
     RATING_MAX_INVALID(3005, "Rating cannot exceed 5", HttpStatus.BAD_REQUEST),
+    SUPPLIER_NOT_EXISTED(4001, "Supplier does not exist", HttpStatus.NOT_FOUND),
+    SUPPLIER_NAME_REQUIRED(4002, "Supplier name is required", HttpStatus.BAD_REQUEST),
+    SUPPLIER_PHONE_REQUIRED(4003, "Supplier phone is required", HttpStatus.BAD_REQUEST),
+    SUPPLIER_EMAIL_REQUIRED(4004, "Supplier email is required", HttpStatus.BAD_REQUEST),
+    SUPPLIER_ADDRESS_REQUIRED(4005, "Supplier address is required", HttpStatus.BAD_REQUEST),
+    SUPPLIER_NAME_TOO_LONG(4006, "Supplier name must not exceed 255 characters", HttpStatus.BAD_REQUEST),
+    SUPPLIER_ADDRESS_TOO_LONG(4007, "Supplier address must not exceed 255 characters", HttpStatus.BAD_REQUEST),
+    PHONE_INVALID(4008, "Phone number must contain 8 to 15 digits", HttpStatus.BAD_REQUEST),
+    SUPPLIER_EMAIL_ALREADY_EXISTS(4009, "Supplier email already exists", HttpStatus.BAD_REQUEST),
+    SUPPLIER_PHONE_ALREADY_EXISTS(4010, "Supplier phone already exists", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
