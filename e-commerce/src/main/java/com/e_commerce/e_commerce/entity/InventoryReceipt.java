@@ -1,5 +1,6 @@
 package com.e_commerce.e_commerce.entity;
 
+import com.e_commerce.e_commerce.enums.InventoryReceiptStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -27,6 +28,9 @@ public class InventoryReceipt {
     BigDecimal totalPrice;
 
     String note;
+
+    @Enumerated(EnumType.STRING)
+    InventoryReceiptStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id")

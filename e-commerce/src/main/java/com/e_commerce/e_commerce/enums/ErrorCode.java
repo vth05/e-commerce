@@ -112,6 +112,13 @@ public enum ErrorCode {
     PHONE_INVALID(4008, "Phone number must contain 8 to 15 digits", HttpStatus.BAD_REQUEST),
     SUPPLIER_EMAIL_ALREADY_EXISTS(4009, "Supplier email already exists", HttpStatus.BAD_REQUEST),
     SUPPLIER_PHONE_ALREADY_EXISTS(4010, "Supplier phone already exists", HttpStatus.BAD_REQUEST),
+    SUPPLIER_ID_REQUIRED(4100, "Supplier id is required", HttpStatus.BAD_REQUEST),
+    INVENTORY_RECEIPT_ITEMS_REQUIRED(4101, "At least one inventory receipt item is required", HttpStatus.BAD_REQUEST),
+    QUANTITY_REQUIRED(4200, "Quantity is required", HttpStatus.BAD_REQUEST),
+    QUANTITY_INVALID(4201, "Quantity must be >= 1", HttpStatus.BAD_REQUEST),
+    IMPORT_PRICE_REQUIRED(4202, "Import price is required", HttpStatus.BAD_REQUEST),
+    IMPORT_PRICE_INVALID(4203, "Import price must be >= 0", HttpStatus.BAD_REQUEST),
+    INVENTORY_RECEIPT_NOT_EXISTED(4204, "Inventory receipt does not exist", HttpStatus.NOT_FOUND),
     ;
 
     int code;
