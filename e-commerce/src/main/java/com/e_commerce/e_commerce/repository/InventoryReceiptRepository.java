@@ -10,6 +10,4 @@ import java.util.Optional;
 @Repository
 public interface InventoryReceiptRepository extends JpaRepository<InventoryReceipt, String> {
     Optional<InventoryReceipt> findByIdAndStatus(String id, InventoryReceiptStatus status);
-
-    Optional<InventoryReceipt> findByIdAndStatusNot(String id, InventoryReceiptStatus status);
 }

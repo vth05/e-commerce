@@ -110,7 +110,7 @@ public class InventoryReceiptService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public InventoryReceiptResponse cancelReceipt(String receiptId) {
-        InventoryReceipt receipt = inventoryReceiptRepository.findByIdAndStatusNot(receiptId, InventoryReceiptStatus.COMPLETED).orElseThrow(() -> new AppException(ErrorCode.INVENTORY_RECEIPT_NOT_EXISTED));
+        InventoryReceipt receipt = inventoryReceiptRepository.findByIdAndStatus(receiptId, InventoryReceiptStatus.PENDING).orElseThrow(() -> new AppException(ErrorCode.INVENTORY_RECEIPT_NOT_EXISTED));
         receipt.setStatus(InventoryReceiptStatus.CANCELLED);
         return inventoryReceiptMapper.toInventoryReceiptResponse(inventoryReceiptRepository.save(receipt));
     }
