@@ -24,7 +24,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Page<Product> findBySearchCriteria(ProductSearchRequest request, boolean isAdmin, Pageable pageable) {
+    public Page<Product> findBySearchCriteria(ProductSearchRequest request, boolean isAdmin, Pageable pageable, Sort.Direction direction) {
         QProduct product = QProduct.product;
         QProductVariant productVariant = QProductVariant.productVariant;
 
@@ -78,8 +78,6 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
             where.and(product.active.isTrue());
             where.and(productVariant.active.isTrue());
         }
-
-        Sort.Direction direction = pageable.getSort().getOrderFor("price").getDirection();
 
         OrderSpecifier<?> priceOrder = direction.isAscending() ?
                 productVariant.price.min().asc() :

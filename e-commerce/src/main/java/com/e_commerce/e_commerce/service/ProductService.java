@@ -94,12 +94,10 @@ public class ProductService {
             String sortDir
     ) {
         boolean isAdmin = SecurityUtils.isAdmin();
-        String sortBy = "price";
-        Sort sort = sortDir.equalsIgnoreCase("desc") ?
-                Sort.by(sortBy).descending() :
-                Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Product> products;
-        return productRepository.findBySearchCriteria(request, isAdmin, pageable).map(product -> productMapper.toProductResponse(product));
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ?
+                Sort.Direction.DESC :
+                Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size);
+        return productRepository.findBySearchCriteria(request, isAdmin, pageable, direction).map(product -> productMapper.toProductResponse(product));
     }
 }
