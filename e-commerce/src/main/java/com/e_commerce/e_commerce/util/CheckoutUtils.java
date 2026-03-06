@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -70,21 +72,27 @@ public class CheckoutUtils {
 
     public ShippingFeeCalculationResult calculateShippingFeeAndDimensions(BigDecimal subtotal, Integer serviceId, String toWardCode, Integer toDistrictId, List<CartItem> cartItemsFromRequest) {
         BigDecimal totalWeight = BigDecimal.ZERO;
-        BigDecimal length = BigDecimal.ZERO;
-        BigDecimal width = BigDecimal.ZERO;
-        BigDecimal height = BigDecimal.ZERO;
+        BigDecimal maxLength = BigDecimal.ZERO;
+        BigDecimal maxWidth = BigDecimal.ZERO;
+        BigDecimal totalHeight = BigDecimal.ZERO;
         BigDecimal insuranceValue = subtotal;
         for (CartItem cartItem : cartItemsFromRequest) {
             ProductVariant productVariant = cartItem.getProductVariant();
             totalWeight = totalWeight.add(safe(productVariant.getWeight()).multiply(BigDecimal.valueOf(cartItem.getQuantity())));
-            length = length.max(safe(productVariant.getLength()));
-            width = width.max(safe(productVariant.getWidth()));
-            height = height.max(safe(productVariant.getHeight()));
+            List<BigDecimal> dims = Arrays.asList(
+                    safe(productVariant.getLength()),
+                    safe(productVariant.getWidth()),
+                    safe(productVariant.getHeight())
+            );
+            Collections.sort(dims, Collections.reverseOrder());
+            maxLength = maxLength.max(dims.get(0));
+            maxWidth = maxWidth.max(dims.get(1));
+            totalHeight = totalHeight.add(dims.get(2).multiply(BigDecimal.valueOf(cartItem.getQuantity())));
         }
         int weightInGrams = totalWeight.setScale(0, RoundingMode.CEILING).intValueExact();
-        int lengthInCm = length.setScale(0, RoundingMode.CEILING).intValueExact();
-        int widthInCm = width.setScale(0, RoundingMode.CEILING).intValueExact();
-        int heightInCm = height.setScale(0, RoundingMode.CEILING).intValueExact();
+        int lengthInCm = maxLength.setScale(0, RoundingMode.CEILING).intValueExact();
+        int widthInCm = maxWidth.setScale(0, RoundingMode.CEILING).intValueExact();
+        int heightInCm = totalHeight.setScale(0, RoundingMode.CEILING).intValueExact();
         GhnCalculateFeeRequest ghnCalculateFeeRequest = GhnCalculateFeeRequest.builder()
                 .service_id(serviceId)
                 .from_ward_code("21906")

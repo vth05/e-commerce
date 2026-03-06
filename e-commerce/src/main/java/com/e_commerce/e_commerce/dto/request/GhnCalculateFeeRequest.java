@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 public class GhnCalculateFeeRequest {
     Integer service_id;
+    Integer service_type_id;
     String from_ward_code;
     String to_ward_code;
     Integer from_district_id;
@@ -19,6 +20,5 @@ public class GhnCalculateFeeRequest {
     Integer width;
     Integer height;
     Integer insurance_value;
-    Integer cod_failed_amount;
     String coupon;
 }
