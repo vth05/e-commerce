@@ -93,8 +93,13 @@ public class CheckoutUtils {
         int lengthInCm = maxLength.setScale(0, RoundingMode.CEILING).intValueExact();
         int widthInCm = maxWidth.setScale(0, RoundingMode.CEILING).intValueExact();
         int heightInCm = totalHeight.setScale(0, RoundingMode.CEILING).intValueExact();
+        Integer service_type_id = 2;
+        if ((lengthInCm * widthInCm * heightInCm) / 5 >= 20000 || weightInGrams >= 20000) {
+            service_type_id = 5;
+        }
         GhnCalculateFeeRequest ghnCalculateFeeRequest = GhnCalculateFeeRequest.builder()
                 .service_id(serviceId)
+                .service_type_id(service_type_id)
                 .from_ward_code("21906")
                 .to_ward_code(toWardCode)
                 .from_district_id(1458)
@@ -106,7 +111,7 @@ public class CheckoutUtils {
                 .insurance_value(insuranceValue.setScale(0, RoundingMode.CEILING).intValueExact())
                 .build();
         return ShippingFeeCalculationResult.builder()
-                .originalShippingFee(BigDecimal.valueOf(ghnService.calculateFee(ghnCalculateFeeRequest).getTotal()))
+                .originalShippingFee(BigDecimal.valueOf(ghnService.calculateFee(ghnCalculateFeeRequest).getService_fee()))
                 .weightInGrams(weightInGrams)
                 .lengthInCm(lengthInCm)
                 .widthInCm(widthInCm)
