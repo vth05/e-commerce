@@ -72,10 +72,15 @@ public class VerificationService {
 
     public void sendOtpToChangeEmail(User user, String newEmail) {
         try {
+            String userId = user.getId();
+            String indexKey = "OtpIndex:CHANGE_EMAIL:" + userId;
+            Boolean exists = redisTemplate.hasKey(indexKey);
+            if (exists) {
+                throw new AppException(ErrorCode.OTP_ALREADY_SENT);
+            }
             SecureRandom random = new SecureRandom();
             String otp = String.valueOf(random.nextInt(900000) + 100000); // tạo từ 100000–999999
             emailService.sendEmail(newEmail, EmailTemplates.OTP_TO_CHANGE_EMAIL_EMAIL_SUBJECT, EmailTemplates.buildOtpToChangeEmailEmail(user.getUsername(), otp));
-            String userId = user.getId();
             String id = UUID.randomUUID().toString();
             OtpSession otpSession = OtpSession.builder()
                     .id(id)
@@ -86,8 +91,9 @@ public class VerificationService {
                     .build();
             otpSessionRepository.save(otpSession);
 
-            String indexKey = "OtpIndex:CHANGE_EMAIL:" + userId + ":" + newEmail + ":" + otp;
             redisTemplate.opsForValue().set(indexKey, id, Duration.ofMinutes(5));
+        } catch (AppException e) {
+            throw e;
         } catch (Exception e) {
             log.warn("Exception sending OTP to change email email: {}", e.getMessage());
         }
