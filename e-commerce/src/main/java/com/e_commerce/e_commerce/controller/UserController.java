@@ -11,8 +11,6 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -61,9 +59,9 @@ public class UserController {
     }
 
     @PostMapping("/email-change-request")
-    ApiResponse<String> requestEmailChange(@RequestBody @Valid RequestChangeEmailOtpRequest request) {
+    ApiResponse<String> requestChangeEmail(@RequestBody @Valid RequestChangeEmailOtpRequest request) {
         return ApiResponse.<String>builder()
-                .result(userService.requestEmailChange(request))
+                .result(userService.requestChangeEmail(request))
                 .build();
     }
 

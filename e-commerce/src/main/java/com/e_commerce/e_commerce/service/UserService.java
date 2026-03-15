@@ -40,7 +40,8 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     EmailService emailService;
-    VerificationService verificationService;
+    EmailVerificationService emailVerificationService;
+    OtpService otpService;
 
     public UserResponse createUser(UserCreationRequest userCreationRequest) {
         User user = userMapper.toUser(userCreationRequest);
@@ -58,7 +59,7 @@ public class UserService {
             throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
         }
 
-        verificationService.sendVerificationEmail(user);
+        emailVerificationService.sendVerificationEmail(user);
 
         return userMapper.toUserResponse(user);
     }
@@ -126,13 +127,13 @@ public class UserService {
         return "Password changed successfully";
     }
 
-    public String requestEmailChange(RequestChangeEmailOtpRequest request) {
+    public String requestChangeEmail(RequestChangeEmailOtpRequest request) {
         String newEmail = request.getNewEmail();
         if (userRepository.existsByEmail(newEmail)) {
             throw new AppException(ErrorCode.EMAIL_ALREADY_IN_USE);
         }
         User user = userRepository.findById(SecurityUtils.getUserIdFromAuthentication()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        verificationService.sendOtpToChangeEmail(user, newEmail);
+        otpService.sendOtpForChangeEmail(user, newEmail);
         return "OTP sent to the new email";
     }
 
@@ -143,7 +144,7 @@ public class UserService {
         }
         User user = userRepository.findById(SecurityUtils.getUserIdFromAuthentication()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         String oldEmail = user.getEmail();
-        verificationService.verifyOtpForChangeEmail(request.getOtp(), user.getId(), newEmail);
+        otpService.verifyOtpForChangeEmail(user.getId(), request.getOtp());
         user.setTokenVersion(user.getTokenVersion() + 1);
         user.setEmail(newEmail);
         userRepository.save(user);
