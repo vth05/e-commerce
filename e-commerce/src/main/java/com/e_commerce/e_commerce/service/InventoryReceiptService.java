@@ -82,7 +82,6 @@ public class InventoryReceiptService {
             inventoryReceipt.setNote(request.getNote());
         }
         inventoryReceipt.setSupplier(supplier);
-        log.info(inventoryReceipt.getStatus().toString());
         return inventoryReceiptMapper.toInventoryReceiptResponse(inventoryReceipt);
     }
 

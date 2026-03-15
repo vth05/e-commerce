@@ -1,6 +1,5 @@
 package com.e_commerce.e_commerce.service;
 
-import com.e_commerce.e_commerce.dto.request.ProductSearchRequest;
 import com.e_commerce.e_commerce.dto.request.ProductVariantCreationRequest;
 import com.e_commerce.e_commerce.dto.request.ProductVariantUpdateRequest;
 import com.e_commerce.e_commerce.dto.response.ProductImageResponse;
@@ -17,7 +16,6 @@ import com.e_commerce.e_commerce.repository.ProductRepository;
 import com.e_commerce.e_commerce.repository.ProductVariantRepository;
 import com.e_commerce.e_commerce.util.ProductVariantUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -79,7 +77,6 @@ public class ProductVariantService {
             productVariant = productVariantRepository.findById(productVariantId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
         } else {
             productVariant = productVariantRepository.findByIdAndActiveTrue(productVariantId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
-            log.info("productVariant: {}", productVariant.isActive());
             productRepository.findByIdAndActiveTrue(productVariant.getProduct().getId()).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_VARIANT_NOT_EXISTED));
         }
         return productVariantMapper.toProductVariantResponse(productVariant);

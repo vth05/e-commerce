@@ -27,11 +27,8 @@ public class ProductVariantImageService {
     public String uploadImage(MultipartFile file) throws IOException {
         assert file.getOriginalFilename() != null;
         String publicValue = generatePublicValue(file.getOriginalFilename());
-        log.info("publicValue: {}", publicValue);
         String extension = getFileName(file.getOriginalFilename())[1];
-        log.info("extension: {}", extension);
         File fileToUpload = convert(file, publicValue, extension);
-        log.info("fileToUpload: {}", fileToUpload);
         // upload file to Cloudinary
         cloudinary.uploader().upload(fileToUpload, ObjectUtils.asMap("public_id", publicValue));
 
@@ -54,7 +51,6 @@ public class ProductVariantImageService {
     private void cleanDisk(File file) {
         try {
             Path filePath = file.toPath();
-            log.info("filePath: {}", filePath);
             Files.delete(filePath);
         } catch (IOException e) {
             log.error(e.getMessage());

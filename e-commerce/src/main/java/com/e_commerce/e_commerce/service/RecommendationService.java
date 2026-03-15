@@ -26,13 +26,12 @@ public class RecommendationService {
         LocalDateTime startDateTime = dateRange.start();
         LocalDateTime endDateTime = dateRange.end();
         List<Object[]> rows = orderItemRepository.findTopSellingProductsForRecommendationByQuantitySoldAndDateRange(startDateTime, endDateTime, limit);
-        List<TopSellingProductsResponse> responses = rows.stream().map(row -> new TopSellingProductsResponse(
+        return rows.stream().map(row -> new TopSellingProductsResponse(
                 String.valueOf(row[0]),
                 String.valueOf(row[1]),
                 (BigDecimal) row[2],
                 ((Number) row[3]).longValue(),
                 ((Number) row[4]).longValue()
         )).toList();
-        return responses;
     }
 }

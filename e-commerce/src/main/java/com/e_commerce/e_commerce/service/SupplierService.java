@@ -31,6 +31,7 @@ public class SupplierService {
         return supplierMapper.toSupplierResponse(supplierRepository.save(supplierMapper.toSupplier(request)));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public SupplierResponse getSupplierById(String supplierId) {
         Supplier supplier = supplierRepository.findById(supplierId).orElseThrow(() -> new AppException(ErrorCode.SUPPLIER_NOT_EXISTED));
         return supplierMapper.toSupplierResponse(supplier);
