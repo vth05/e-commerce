@@ -127,6 +127,21 @@ public class UserService {
         return "Password changed successfully";
     }
 
+    public String forgotPassword(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        otpService.sendOtpForForgotPassword(user);
+        return "OTP sent to the email";
+    }
+
+    public String resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        otpService.verifyOtpForForgotPassword(user.getId(), request.getOtp());
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        userRepository.save(user);
+        return "Reset password successfully";
+    }
+
     public String requestChangeEmail(RequestChangeEmailOtpRequest request) {
         String newEmail = request.getNewEmail();
         if (userRepository.existsByEmail(newEmail)) {

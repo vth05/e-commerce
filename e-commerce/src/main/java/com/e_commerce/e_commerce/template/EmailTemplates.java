@@ -84,6 +84,23 @@ public class EmailTemplates {
                 """.formatted(username, otp);
     }
 
+    public static String buildOtpToResetPasswordEmail(String username, String otp) {
+        return """
+                Hi %s,
+                
+                You have requested to reset your password on MyShop. Please use the OTP below to proceed:
+                
+                OTP: %s
+                
+                This OTP will expire in 5 minutes.
+                
+                If you did not request this change, please ignore this email.
+                
+                Best regards,
+                The MyShop Team
+                """.formatted(username, otp);
+    }
+
     public static final String WELCOME_EMAIL_SUBJECT = "Thanks for joining my e-commerce web";
 
     public static final String PASSWORD_CHANGED_EMAIL_SUBJECT = "Your MyShop password has been changed";
@@ -93,4 +110,6 @@ public class EmailTemplates {
     public static final String VERIFICATION_EMAIL_SUBJECT = "Verify your MyShop account";
 
     public static final String OTP_TO_CHANGE_EMAIL_EMAIL_SUBJECT = "Your OTP to change email on MyShop";
+
+    public static final String OTP_TO_RESET_PASSWORD_EMAIL_SUBJECT = "Your OTP to reset password on MyShop";
 }

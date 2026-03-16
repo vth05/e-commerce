@@ -5,6 +5,7 @@ import com.e_commerce.e_commerce.service.UserService;
 import com.e_commerce.e_commerce.dto.response.ApiResponse;
 import com.e_commerce.e_commerce.dto.response.UserResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -69,6 +70,20 @@ public class UserController {
     ApiResponse<String> changeEmail(@RequestBody @Valid ChangeEmailRequest request) {
         return ApiResponse.<String>builder()
                 .result(userService.changeEmail(request))
+                .build();
+    }
+
+    @PostMapping("/forgot-password")
+    ApiResponse<String> forgotPassword(@RequestParam @NotBlank String email) {
+        return ApiResponse.<String>builder()
+                .result(userService.forgotPassword(email))
+                .build();
+    }
+
+    @PutMapping("/reset-password")
+    ApiResponse<String> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+        return ApiResponse.<String>builder()
+                .result(userService.resetPassword(request))
                 .build();
     }
 

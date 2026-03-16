@@ -58,17 +58,57 @@ public class OtpService {
         }
     }
 
-    public boolean verifyOtpForChangeEmail(String userId, String otp) {
+    public void verifyOtpForChangeEmail(String userId, String otp) {
         String indexKey = "OtpIndex:CHANGE_EMAIL:" + userId;
         String id = String.valueOf(redisTemplate.opsForValue().get(indexKey));
         OtpSession otpSession = otpSessionRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.OTP_INVALID));
-        if (!otpSession.isActive() || !otp.equals(otpSession.getOtp())) {
+        if (!otp.equals(otpSession.getOtp())) {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
-        otpSession.setActive(false);
-        otpSessionRepository.save(otpSession);
-
+        otpSessionRepository.deleteById(id);
         redisTemplate.delete(indexKey);
-        return true;
+    }
+
+    public void sendOtpForForgotPassword(User user) {
+        String id = UUID.randomUUID().toString();
+        String userId = user.getId();
+        String email = user.getEmail();
+        String indexKey = "OtpIndex:FORGOT_PASSWORD:" + userId;
+        try {
+            if (redisTemplate.hasKey(indexKey)) {
+                throw new AppException(ErrorCode.OTP_ALREADY_SENT);
+            }
+            SecureRandom random = new SecureRandom();
+            String otp = String.valueOf(random.nextInt(900000) + 100000); // tạo từ 100000–999999
+            OtpSession otpSession = OtpSession.builder()
+                    .id(id)
+                    .otp(otp)
+                    .target(email)
+                    .userId(userId)
+                    .action(OtpAction.FORGOT_PASSWORD)
+                    .build();
+            otpSessionRepository.save(otpSession);
+
+            redisTemplate.opsForValue().set(indexKey, id, Duration.ofMinutes(5));
+
+            emailService.sendEmail(email, EmailTemplates.OTP_TO_RESET_PASSWORD_EMAIL_SUBJECT, EmailTemplates.buildOtpToResetPasswordEmail(user.getUsername(), otp));
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            otpSessionRepository.deleteById(id);
+            redisTemplate.delete(indexKey);
+            log.warn("Exception sending OTP to reset password email: {}", e.getMessage());
+        }
+    }
+
+    public void verifyOtpForForgotPassword(String userId, String otp) {
+        String indexKey = "OtpIndex:FORGOT_PASSWORD:" + userId;
+        String id = String.valueOf(redisTemplate.opsForValue().get(indexKey));
+        OtpSession otpSession = otpSessionRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.OTP_INVALID));
+        if (!otp.equals(otpSession.getOtp())) {
+            throw new AppException(ErrorCode.OTP_INVALID);
+        }
+        otpSessionRepository.deleteById(id);
+        redisTemplate.delete(indexKey);
     }
 }

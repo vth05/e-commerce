@@ -25,16 +25,20 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class SecurityConfig {
-    String[] PUBLIC_ENDPOINTS = {
+    String[] PUBLIC_POST_ENDPOINTS = {
             "/auth/login",
             "/auth/introspect",
             "/auth/logout",
             "/auth/refresh-token",
             "/users",
+            "/users/forgot-password",
     };
     String[] PUBLIC_GET_ENDPOINTS = {
             "/verify/email/**",
             "/payment/**",
+    };
+    String[] PUBLIC_PUT_ENDPOINTS = {
+            "/users/reset-password",
     };
     CustomJwtDecoder customJwtDecoder;
     AuthenticationService authenticationService;
@@ -45,8 +49,9 @@ public class SecurityConfig {
         httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
