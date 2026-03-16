@@ -17,8 +17,9 @@ import java.util.List;
 
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
+    // discountAmount is null when no voucher is applied; without COALESCE, any arithmetic with null returns null, causing incorrect revenue calculation
     @Query("""
-            select new com.e_commerce.e_commerce.dto.response.ProductRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity - oi.discountAmount))
+            select new com.e_commerce.e_commerce.dto.response.ProductRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity - COALESCE(oi.discountAmount, 0)))
             from OrderItem oi
             join oi.order o
             where o.createdAt between :start and :end and o.checkoutStatus = :status
@@ -27,7 +28,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
     Page<ProductRevenueResponse> findRevenueByProductAndDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
 
     @Query("""
-            select new com.e_commerce.e_commerce.dto.response.TopProductsByRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity - oi.discountAmount))
+            select new com.e_commerce.e_commerce.dto.response.TopProductsByRevenueResponse(oi.productName, sum(oi.priceAtPurchase * oi.quantity - COALESCE(oi.discountAmount, 0)))
             from OrderItem oi
             join oi.order o
             where o.createdAt between :start and :end and o.checkoutStatus = :status

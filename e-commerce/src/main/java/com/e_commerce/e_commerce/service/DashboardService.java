@@ -31,15 +31,13 @@ public class DashboardService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public RevenueStatsResponse getDailyRevenueByDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end) {
-        if (status == null) status = CheckoutStatus.PAID;
-        DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
-        LocalDateTime startDateTime = dateRange.start();
-        LocalDateTime endDateTime = dateRange.end();
-        BigDecimal totalRevenue = orderRepository.findTotalRevenueByDateRangeAndCheckoutStatus(status, startDateTime, endDateTime);
+        status = resolveStatus(status);
+        LocalDateTime[] localDateTimes = resolveDateRange(start, end);
+        BigDecimal totalRevenue = orderRepository.findTotalRevenueByDateRangeAndCheckoutStatus(status, localDateTimes[0], localDateTimes[1]);
         if (totalRevenue == null) {
             totalRevenue = BigDecimal.ZERO;
         }
-        List<RevenueByDate> revenueByDates = orderRepository.findDailyRevenueByDateRangeAndCheckoutStatus(status, startDateTime, endDateTime);
+        List<RevenueByDate> revenueByDates = orderRepository.findDailyRevenueByDateRangeAndCheckoutStatus(status, localDateTimes[0], localDateTimes[1]);
         return RevenueStatsResponse.builder()
                 .totalRevenue(totalRevenue)
                 .revenueByDate(revenueByDates)
@@ -48,46 +46,38 @@ public class DashboardService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public Page<ProductRevenueResponse> getRevenueByProductAndDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end, int page, int limit) {
-        if (status == null) status = CheckoutStatus.PAID;
-        DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
-        LocalDateTime startDateTime = dateRange.start();
-        LocalDateTime endDateTime = dateRange.end();
+        status = resolveStatus(status);
+        LocalDateTime[] localDateTimes = resolveDateRange(start, end);
         Pageable pageable = PageRequest.of(page, limit);
-        return orderItemRepository.findRevenueByProductAndDateRangeAndCheckoutStatus(status, startDateTime, endDateTime, pageable);
+        return orderItemRepository.findRevenueByProductAndDateRangeAndCheckoutStatus(status, localDateTimes[0], localDateTimes[1], pageable);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public Page<TopProductsByRevenueResponse> getTopProductsByRevenueAndDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end, int page, int limit) {
         if (limit > 50) limit = 50;
-        if (status == null) status = CheckoutStatus.PAID;
-        DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
-        LocalDateTime startDateTime = dateRange.start();
-        LocalDateTime endDateTime = dateRange.end();
+        status = resolveStatus(status);
+        LocalDateTime[] localDateTimes = resolveDateRange(start, end);
         Pageable pageable = PageRequest.of(page, limit);
-        return orderItemRepository.findTopProductsByRevenueAndDateRangeAndCheckoutStatus(status, startDateTime, endDateTime, pageable);
+        return orderItemRepository.findTopProductsByRevenueAndDateRangeAndCheckoutStatus(status, localDateTimes[0], localDateTimes[1], pageable);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public Page<TopProductsByQuantitySoldResponse> getTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end, int page, int limit) {
         if (limit > 50) limit = 50;
-        if (status == null) status = CheckoutStatus.PAID;
-        DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
-        LocalDateTime startDateTime = dateRange.start();
-        LocalDateTime endDateTime = dateRange.end();
+        status = resolveStatus(status);
+        LocalDateTime[] localDateTimes = resolveDateRange(start, end);
         Pageable pageable = PageRequest.of(page, limit);
-        return orderItemRepository.findTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(status, startDateTime, endDateTime, pageable);
+        return orderItemRepository.findTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(status, localDateTimes[0], localDateTimes[1], pageable);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<TopCustomersResponse> getTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(CheckoutStatus status, LocalDate start, LocalDate end, boolean active, int page, int limit) {
         if (limit > 50) limit = 50;
-        if (status == null) status = CheckoutStatus.PAID;
+        status = resolveStatus(status);
         String statusString = status.name();
-        DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
-        LocalDateTime startDateTime = dateRange.start();
-        LocalDateTime endDateTime = dateRange.end();
-        List<Object[]> rows = orderRepository.findTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(statusString, startDateTime, endDateTime, active, page * limit, limit);
-        List<TopCustomersResponse> topCustomersResponses = rows.stream().map(row -> new TopCustomersResponse(
+        LocalDateTime[] localDateTimes = resolveDateRange(start, end);
+        List<Object[]> rows = orderRepository.findTopCustomersByUserStatusAndDateRangeAndCheckoutStatus(statusString, localDateTimes[0], localDateTimes[1], active, page * limit, limit);
+        return rows.stream().map(row -> new TopCustomersResponse(
                 String.valueOf(row[0]),
                 String.valueOf(row[1]),
                 String.valueOf(row[2]),
@@ -96,7 +86,6 @@ public class DashboardService {
 //                (Long) row[5]
                 ((Number) row[5]).longValue()
         )).toList();
-        return topCustomersResponses;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -104,5 +93,14 @@ public class DashboardService {
         if (limit > 50) limit = 50;
         Pageable pageable = PageRequest.of(page, limit);
         return productVariantRepository.findProductVariantsLowInStock(threshold, pageable);
+    }
+
+    private CheckoutStatus resolveStatus(CheckoutStatus status) {
+        return status != null ? status : CheckoutStatus.PAID;
+    }
+
+    private LocalDateTime[] resolveDateRange(LocalDate start, LocalDate end) {
+        DateRange dateRange = DateRangeUtils.normalizeDateRange(start, end);
+        return new LocalDateTime[]{dateRange.start(), dateRange.end()};
     }
 }
