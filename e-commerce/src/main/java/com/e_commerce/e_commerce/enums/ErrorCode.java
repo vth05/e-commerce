@@ -120,6 +120,7 @@ public enum ErrorCode {
     IMPORT_PRICE_INVALID(4203, "Import price must be >= 0", HttpStatus.BAD_REQUEST),
     INVENTORY_RECEIPT_NOT_EXISTED(4204, "Inventory receipt does not exist", HttpStatus.NOT_FOUND),
     OTP_ALREADY_SENT(4300, "OTP has already been sent, please wait 5 minutes before trying again", HttpStatus.TOO_MANY_REQUESTS),
+    ORDER_ALREADY_PAID(4301, "Order has already been paid", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

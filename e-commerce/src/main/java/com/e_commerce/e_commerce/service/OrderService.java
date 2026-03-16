@@ -60,4 +60,14 @@ public class OrderService {
         Order order = orderRepository.findByIdAndUserId(orderId, userId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
         return orderMapper.toOrderResponse(order);
     }
+
+    public OrderResponse cancelOrder(String id) {
+        String userId = SecurityUtils.getUserIdFromAuthentication();
+        Order order = orderRepository.findByIdAndUserId(id, userId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+        if (order.getCheckoutStatus() == CheckoutStatus.PAID) {
+            throw new AppException(ErrorCode.ORDER_ALREADY_PAID);
+        }
+        order.setCheckoutStatus(CheckoutStatus.CANCELLED);
+        return orderMapper.toOrderResponse(orderRepository.save(order));
+    }
 }

@@ -50,4 +50,11 @@ public class OrderController {
                 .result(orderService.getOrderById(orderId))
                 .build();
     }
+
+    @DeleteMapping("/{orderId}")
+    public ApiResponse<OrderResponse> cancelOrder(@PathVariable String orderId) {
+        return ApiResponse.<OrderResponse>builder()
+                .result(orderService.cancelOrder(orderId))
+                .build();
+    }
 }
