@@ -50,20 +50,21 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
     @Query(value = """
             select oi.product_id,
                    oi.product_name,
-                   pv.displayPrice,
-                   pv.stockQuantity,
+                   pv.display_price,
+                   pv.stock_quantity,
                    sum(oi.quantity) as quantitySold
             from order_item oi
             join (
                 select product_id,
-                       min(price) as displayPrice,
-                       sum(quantity) as stockQuantity
+                       min(price) as display_price,
+                       sum(quantity) as stock_quantity
                 from product_variant
                 group by product_id
+                having stock_quantity > 0
             ) pv on oi.product_id = pv.product_id
             join orders o on oi.order_id = o.cart_id
             where o.created_at between :start and :end and o.checkout_status in ('PAID', 'PENDING')
-            group by oi.product_id, oi.product_name, pv.displayPrice, pv.stockQuantity
+            group by oi.product_id, oi.product_name, pv.display_price, pv.stock_quantity
             order by quantitySold desc
             limit :limit
             """, nativeQuery = true)

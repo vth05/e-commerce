@@ -48,7 +48,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             from orders o
             join user u on o.user_id = u.id
             where o.created_at between :start and :end and o.checkout_status = :status and u.active = :active
-            group by u.id, concat(u.first_name, ' ', u.last_name), u.email, u.phone_number
+            group by u.id, full_name, u.email, u.phone_number
             order by total_spent desc
             limit :limit
             offset :offset
