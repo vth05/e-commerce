@@ -121,6 +121,7 @@ public enum ErrorCode {
     INVENTORY_RECEIPT_NOT_EXISTED(4204, "Inventory receipt does not exist", HttpStatus.NOT_FOUND),
     OTP_ALREADY_SENT(4300, "OTP has already been sent, please wait 5 minutes before trying again", HttpStatus.TOO_MANY_REQUESTS),
     ORDER_ALREADY_PAID(4301, "Order has already been paid", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_PURCHASED(4302, "You must purchase this product before writing a review", HttpStatus.FORBIDDEN),
     ;
 
     int code;

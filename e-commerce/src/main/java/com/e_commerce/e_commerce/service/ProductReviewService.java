@@ -5,10 +5,12 @@ import com.e_commerce.e_commerce.dto.request.ProductReviewUpdateRequest;
 import com.e_commerce.e_commerce.dto.response.ProductReviewResponse;
 import com.e_commerce.e_commerce.dto.response.ProductReviewSummaryResponse;
 import com.e_commerce.e_commerce.entity.ProductReview;
+import com.e_commerce.e_commerce.enums.CheckoutStatus;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.enums.ReviewStatus;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.ProductReviewMapper;
+import com.e_commerce.e_commerce.repository.OrderItemRepository;
 import com.e_commerce.e_commerce.repository.ProductRepository;
 import com.e_commerce.e_commerce.repository.ProductReviewRepository;
 import com.e_commerce.e_commerce.util.SecurityUtils;
@@ -33,12 +35,18 @@ public class ProductReviewService {
     ProductReviewRepository productReviewRepository;
     ProductReviewMapper productReviewMapper;
     ProductRepository productRepository;
+    OrderItemRepository orderItemRepository;
 
     @PreAuthorize("hasRole('USER')")
     public ProductReviewResponse createProductReview(ProductReviewCreationRequest request) {
-        validateProductExists(request.getProductId());
+        String productId = request.getProductId();
+        validateProductExists(productId);
+        String userId = SecurityUtils.getUserIdFromAuthentication();
+        if (!orderItemRepository.existsByProductIdAndOrderUserIdAndOrderCheckoutStatus(productId, userId, CheckoutStatus.PAID)) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_PURCHASED);
+        }
         ProductReview productReview = productReviewMapper.toProductReview(request);
-        productReview.setUserId(SecurityUtils.getUserIdFromAuthentication());
+        productReview.setUserId(userId);
         productReview.setReviewStatus(ReviewStatus.PENDING);
         return productReviewMapper.toProductReviewResponse(productReviewRepository.save(productReview));
     }

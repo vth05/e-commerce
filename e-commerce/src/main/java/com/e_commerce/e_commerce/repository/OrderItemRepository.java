@@ -47,6 +47,8 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
             """)
     Page<TopProductsByQuantitySoldResponse> findTopProductsByQuantitySoldAndDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
 
+    boolean existsByProductIdAndOrderUserIdAndOrderCheckoutStatus(String productId, String userId, CheckoutStatus checkoutStatus);
+
     @Query(value = """
             select oi.product_id,
                    oi.product_name,
