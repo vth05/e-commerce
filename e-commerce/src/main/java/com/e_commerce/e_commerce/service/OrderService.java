@@ -18,6 +18,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -64,10 +67,33 @@ public class OrderService {
     public OrderResponse cancelOrder(String id) {
         String userId = SecurityUtils.getUserIdFromAuthentication();
         Order order = orderRepository.findByIdAndUserId(id, userId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
-        if (order.getCheckoutStatus() == CheckoutStatus.PAID) {
-            throw new AppException(ErrorCode.ORDER_ALREADY_PAID);
+        if (order.getCheckoutStatus() != CheckoutStatus.PENDING) {
+            throw new AppException(ErrorCode.INVALID_ORDER_STATUS_TRANSITION);
         }
         order.setCheckoutStatus(CheckoutStatus.CANCELLED);
         return orderMapper.toOrderResponse(orderRepository.save(order));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public OrderResponse updateOrderStatus(String orderId, CheckoutStatus newStatus) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+        validateStatusTransition(order.getCheckoutStatus(), newStatus);
+        order.setCheckoutStatus(newStatus);
+        return orderMapper.toOrderResponse(orderRepository.save(order));
+    }
+
+    private void validateStatusTransition(CheckoutStatus current, CheckoutStatus next) {
+        Map<CheckoutStatus, Set<CheckoutStatus>> allowedTransitions = Map.of(
+                CheckoutStatus.PENDING, Set.of(CheckoutStatus.PAID, CheckoutStatus.CANCELLED),
+                CheckoutStatus.PAID, Set.of(CheckoutStatus.SHIPPING),
+                CheckoutStatus.SHIPPING, Set.of(CheckoutStatus.DELIVERED, CheckoutStatus.DELIVERY_FAILED),
+                CheckoutStatus.DELIVERED, Set.of(),
+                CheckoutStatus.DELIVERY_FAILED, Set.of(),
+                CheckoutStatus.CANCELLED, Set.of()
+        );
+        Set<CheckoutStatus> allowed = allowedTransitions.getOrDefault(current, Set.of());
+        if (!allowed.contains(next)) {
+            throw new AppException(ErrorCode.INVALID_ORDER_STATUS_TRANSITION);
+        }
     }
 }

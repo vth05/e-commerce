@@ -57,4 +57,14 @@ public class OrderController {
                 .result(orderService.cancelOrder(orderId))
                 .build();
     }
+
+    @PatchMapping("/{orderId}/status")
+    public ApiResponse<OrderResponse> updateOrderStatus(
+            @PathVariable String orderId,
+            @RequestParam CheckoutStatus status
+    ) {
+        return ApiResponse.<OrderResponse>builder()
+                .result(orderService.updateOrderStatus(orderId, status))
+                .build();
+    }
 }

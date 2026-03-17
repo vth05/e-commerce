@@ -122,6 +122,7 @@ public enum ErrorCode {
     OTP_ALREADY_SENT(4300, "OTP has already been sent, please wait 5 minutes before trying again", HttpStatus.TOO_MANY_REQUESTS),
     ORDER_ALREADY_PAID(4301, "Order has already been paid", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_PURCHASED(4302, "You must purchase this product before writing a review", HttpStatus.FORBIDDEN),
+    INVALID_ORDER_STATUS_TRANSITION(4303, "Invalid order status transition", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
