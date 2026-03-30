@@ -4,6 +4,7 @@ import com.e_commerce.e_commerce.dto.request.ProductCreationRequest;
 import com.e_commerce.e_commerce.dto.request.ProductSearchRequest;
 import com.e_commerce.e_commerce.dto.request.ProductUpdateRequest;
 import com.e_commerce.e_commerce.dto.response.ApiResponse;
+import com.e_commerce.e_commerce.dto.response.PageResponse;
 import com.e_commerce.e_commerce.dto.response.ProductResponse;
 import com.e_commerce.e_commerce.service.ProductService;
 import jakarta.validation.Valid;
@@ -12,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -30,13 +29,13 @@ public class ProductController {
     }
 
     @GetMapping
-    ApiResponse<Page<ProductResponse>> getProducts(
+    ApiResponse<PageResponse<ProductResponse>> getProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir
     ) {
-        return ApiResponse.<Page<ProductResponse>>builder()
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
                 .result(productService.getProducts(page, size, sortBy, sortDir))
                 .build();
     }

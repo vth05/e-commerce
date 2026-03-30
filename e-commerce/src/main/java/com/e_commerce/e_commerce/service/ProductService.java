@@ -3,13 +3,13 @@ package com.e_commerce.e_commerce.service;
 import com.e_commerce.e_commerce.dto.request.ProductCreationRequest;
 import com.e_commerce.e_commerce.dto.request.ProductSearchRequest;
 import com.e_commerce.e_commerce.dto.request.ProductUpdateRequest;
+import com.e_commerce.e_commerce.dto.response.PageResponse;
 import com.e_commerce.e_commerce.dto.response.ProductResponse;
 import com.e_commerce.e_commerce.entity.Product;
 import com.e_commerce.e_commerce.enums.ErrorCode;
 import com.e_commerce.e_commerce.exception.AppException;
 import com.e_commerce.e_commerce.mapper.ProductMapper;
 import com.e_commerce.e_commerce.repository.ProductRepository;
-import com.e_commerce.e_commerce.repository.ProductRepositoryImpl;
 import com.e_commerce.e_commerce.util.ParseUtils;
 import com.e_commerce.e_commerce.util.ProductUtils;
 import com.e_commerce.e_commerce.util.SecurityUtils;
@@ -17,14 +17,13 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +52,8 @@ public class ProductService {
         return productMapper.toProductResponse(product);
     }
 
-    public Page<ProductResponse> getProducts(int page, int size, String sortBy, String sortDir) {
+    @Cacheable("getProducts")
+    public PageResponse<ProductResponse> getProducts(int page, int size, String sortBy, String sortDir) {
         boolean isAdmin = SecurityUtils.isAdmin();
 
         Sort sort = sortDir.equalsIgnoreCase("desc") ?
@@ -66,8 +66,8 @@ public class ProductService {
         } else {
             products = productRepository.findAllByActiveTrue(pageable);
         }
-
-        return products.map(product -> productMapper.toProductResponse(product));
+        Page<ProductResponse> productResponses = products.map(product -> productMapper.toProductResponse(product));
+        return new PageResponse<>(productResponses);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
