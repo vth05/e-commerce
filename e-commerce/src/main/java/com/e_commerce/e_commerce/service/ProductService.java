@@ -17,7 +17,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +37,7 @@ public class ProductService {
     ProductRepository productRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse createProduct(ProductCreationRequest productCreationRequest) {
         Product product = productMapper.toProduct(productCreationRequest);
         product.setCategory(ParseUtils.parseCategory(productCreationRequest.getCategory()));
@@ -41,6 +45,7 @@ public class ProductService {
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
+    @Cacheable(value = "product", key = "{#productId, T(com.e_commerce.e_commerce.util.SecurityUtils).isAdmin()}")
     public ProductResponse getProduct(String productId) {
         boolean isAdmin = SecurityUtils.isAdmin();
         Product product;
@@ -52,7 +57,8 @@ public class ProductService {
         return productMapper.toProductResponse(product);
     }
 
-    @Cacheable("getProducts")
+    // use T() to call static method directly without bean (claude)
+    @Cacheable(value = "products", key = "{#page, #size, #sortBy, #sortDir, T(com.e_commerce.e_commerce.util.SecurityUtils).isAdmin()}")
     public PageResponse<ProductResponse> getProducts(int page, int size, String sortBy, String sortDir) {
         boolean isAdmin = SecurityUtils.isAdmin();
 
@@ -70,6 +76,15 @@ public class ProductService {
         return new PageResponse<>(productResponses);
     }
 
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "products", allEntries = true),
+                    @CacheEvict(value = "product", key = "{#productId, false}")
+            },
+            put = {
+                    @CachePut(value = "product", key = "{#productId, true}")
+            }
+    )
     @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse updateProduct(String productId, ProductUpdateRequest productUpdateRequest) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
@@ -80,6 +95,15 @@ public class ProductService {
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "products", allEntries = true),
+                    @CacheEvict(value = "product", key = "{#productId, false}")
+            },
+            put = {
+                    @CachePut(value = "product", key = "{#productId, true}")
+            }
+    )
     @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse deactivateProduct(String productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
