@@ -75,4 +75,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
             @Param("end") LocalDateTime end,
             @Param("limit") int limit
     );
+
+    List<OrderItem> findAllByOrderId(String orderId);
 }

@@ -17,8 +17,6 @@ import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, String> {
-    Page<Order> findAllByUserIdAndCheckoutStatusNot(String userId, CheckoutStatus checkoutStatus, Pageable pageable);
-
     Page<Order> findAllByUserIdAndCheckoutStatus(String userId, CheckoutStatus checkoutStatus, Pageable pageable);
 
     Page<Order> findAllByCheckoutStatus(CheckoutStatus checkoutStatus, Pageable pageable);

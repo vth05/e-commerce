@@ -7,5 +7,4 @@ public enum CheckoutStatus {
     DELIVERED,
     DELIVERY_FAILED,
     CANCELLED,
-    DRAFT,
 }
