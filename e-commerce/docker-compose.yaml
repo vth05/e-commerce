@@ -3,3 +3,27 @@ services:
     image: redis/redis-stack:latest
     ports:
       - "6379:6379"
+  mysql:
+    image: mysql:8.0.43-debian
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: thanhvinh05
+      MYSQL_DATABASE: e_commerce
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pthanhvinh05" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  app:
+    image: vinhth05/e-commerce:0.0.7
+    container_name: e-commerce
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started

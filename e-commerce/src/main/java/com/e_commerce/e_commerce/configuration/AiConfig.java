@@ -1,6 +1,7 @@
 package com.e_commerce.e_commerce.configuration;
 
 import io.micrometer.observation.ObservationRegistry;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.TokenCountBatchingStrategy;
@@ -20,11 +21,18 @@ import org.springframework.web.reactive.function.client.WebClient;
 import redis.clients.jedis.JedisPooled;
 
 @Configuration
+@Slf4j
 public class AiConfig {
     @Value("${mistral.api.key}")
     String apiKey;
     @Value("${mistral.api.base-url}")
     String baseUrl;
+    @Value("${spring.data.redis.host}")
+    private String host;
+    @Value("${spring.data.redis.port}")
+    private int port;
+    @Value("${spring.data.redis.password:}")
+    private String password;
 
     @Bean
     public MistralAiApi mistralAiApi(RestClient.Builder restClientBuilder, WebClient.Builder webClientBuilder) {
@@ -56,7 +64,13 @@ public class AiConfig {
 
     @Bean
     public JedisPooled jedisPooled() {
-        return new JedisPooled("localhost", 6379);
+        if (password == null || password.isEmpty()) {
+            // local
+            return new JedisPooled(host, port);
+        } else {
+            // cloud
+            return new JedisPooled(host, port, null, password);
+        }
     }
 
     @Bean

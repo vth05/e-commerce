@@ -17,7 +17,7 @@ spring:
     properties:
       hibernate:
         jdbc:
-          batch_size: 3
+          batch_size: 20
         order_inserts: true
         order_updates: true
         generate_statistics: true
@@ -25,15 +25,15 @@ spring:
     type: redis
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: 213660715303-8kdmis4acl8l0omrqtebrd2v3ivd5hb7.apps.googleusercontent.com
-            client-secret: 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
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
   ai:
     openai:
       api-key: ${GEMINI_API_KEY}

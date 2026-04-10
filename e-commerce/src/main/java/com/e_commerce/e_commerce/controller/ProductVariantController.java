@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,10 +66,10 @@ public class ProductVariantController {
                 .build();
     }
 
-    @PostMapping("/{productVariantId}/images")
+    @PostMapping(value = "/{productVariantId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ApiResponse<ProductImageResponse> uploadVariantImage(
             @PathVariable String productVariantId,
-            @RequestParam MultipartFile file
+            @RequestParam("file") MultipartFile file
     ) throws IOException {
         return ApiResponse.<ProductImageResponse>builder()
                 .result(productVariantService.uploadVariantImage(productVariantId, file))

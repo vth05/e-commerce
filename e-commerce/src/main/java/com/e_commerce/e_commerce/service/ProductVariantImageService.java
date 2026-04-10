@@ -10,11 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -25,36 +22,14 @@ public class ProductVariantImageService {
     Cloudinary cloudinary;
 
     public String uploadImage(MultipartFile file) throws IOException {
-        assert file.getOriginalFilename() != null;
+        if (file == null || file.isEmpty() || file.getOriginalFilename() == null) {
+            throw new IllegalArgumentException("Invalid file");
+        }
         String publicValue = generatePublicValue(file.getOriginalFilename());
-        String extension = getFileName(file.getOriginalFilename())[1];
-        File fileToUpload = convert(file, publicValue, extension);
         // upload file to Cloudinary
-        cloudinary.uploader().upload(fileToUpload, ObjectUtils.asMap("public_id", publicValue));
-
-        cleanDisk(fileToUpload);
-
-        // create public url for accessing
-        return cloudinary.url().generate(StringUtils.join(publicValue, ".", extension));
-    }
-
-    private File convert(MultipartFile file, String publicValue, String extension) throws IOException {
-        assert file.getOriginalFilename() != null;
-        // join publicValue and extension (extension like jpg, png,...)
-        File convFile = new File(StringUtils.join(publicValue, ".", extension));
-        try (InputStream is = file.getInputStream()) {
-            Files.copy(is, convFile.toPath());
-        }
-        return convFile;
-    }
-
-    private void cleanDisk(File file) {
-        try {
-            Path filePath = file.toPath();
-            Files.delete(filePath);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("public_id", publicValue));
+        // get public url for accessing
+        return uploadResult.get("secure_url").toString();
     }
 
     public String generatePublicValue(String originalName) {
