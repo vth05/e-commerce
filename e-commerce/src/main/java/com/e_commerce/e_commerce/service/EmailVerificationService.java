@@ -10,7 +10,9 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,9 @@ import java.time.LocalDateTime;
 public class EmailVerificationService {
     EmailService emailService;
     VerificationTokenRepository verificationTokenRepository;
+    @NonFinal
+    @Value("${app.base-url}")
+    String baseUrl;
 
     public void sendVerificationEmail(User user) {
         VerificationToken verificationToken = VerificationToken.builder()
@@ -30,7 +35,7 @@ public class EmailVerificationService {
                 .build();
         verificationTokenRepository.save(verificationToken);
 
-        String verificationLink = "http://localhost:8080/verify/email/" + user.getId();
+        String verificationLink = baseUrl + "/verify/email/" + user.getId();
         try {
             emailService.sendEmail(user.getEmail(), EmailTemplates.VERIFICATION_EMAIL_SUBJECT, EmailTemplates.buildVerificationEmail(user.getUsername(), verificationLink));
             log.info("Verification email: {}", verificationLink);

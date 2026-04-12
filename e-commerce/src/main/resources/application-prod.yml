@@ -10,3 +10,6 @@ debug: false
 open:
   api:
     serverUrl: ${OPEN_API_SERVER_URL}
+
+app:
+  base-url: https://e-commerce-0-0-5.onrender.com

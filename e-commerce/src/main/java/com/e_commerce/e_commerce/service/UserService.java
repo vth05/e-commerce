@@ -42,8 +42,12 @@ public class UserService {
     EmailService emailService;
     EmailVerificationService emailVerificationService;
     OtpService otpService;
+    AuthenticationService authenticationService;
 
     public UserResponse createUser(UserCreationRequest userCreationRequest) {
+        if (userRepository.existsByEmail(userCreationRequest.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_IN_USE);
+        }
         User user = userMapper.toUser(userCreationRequest);
         user.setPassword(passwordEncoder.encode(userCreationRequest.getPassword()));
         Set<Role> roles = new HashSet<>();
@@ -196,12 +200,12 @@ public class UserService {
     }
 
     @Transactional
-    public User findOrCreateUser(OAuth2User oAuth2User) {
+    public String findOrCreateUserAndGenerateToken(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
         Set<Role> roles = new HashSet<>();
         roleRepository.findById("USER").ifPresent(role -> roles.add(role));
         // find (login) or create user (register)
-        return userRepository.findByEmail(email).orElseGet(() -> {
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = User.builder()
                     .username(email)
                     .email(email)
@@ -210,5 +214,6 @@ public class UserService {
                     .build();
             return userRepository.save(newUser);
         });
+        return authenticationService.generateToken(user);
     }
 }

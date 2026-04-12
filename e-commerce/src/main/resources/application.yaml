@@ -76,3 +76,6 @@ open:
     description: "Description"
     serverUrl: "http://localhost:8080"
     serverName: "Server Test"
+
+app:
+  base-url: http://localhost:8080

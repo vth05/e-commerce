@@ -1,7 +1,5 @@
 package com.e_commerce.e_commerce.configuration;
 
-import com.e_commerce.e_commerce.entity.User;
-import com.e_commerce.e_commerce.service.AuthenticationService;
 import com.e_commerce.e_commerce.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +39,6 @@ public class SecurityConfig {
             "/users/reset-password",
     };
     CustomJwtDecoder customJwtDecoder;
-    AuthenticationService authenticationService;
     UserService userService;
 
     @Bean
@@ -58,8 +55,7 @@ public class SecurityConfig {
                         .successHandler((req, res, auth) -> {
                             OAuth2AuthenticationToken oAuth2AuthenticationToken = (OAuth2AuthenticationToken) auth;
                             OAuth2User oAuth2User = oAuth2AuthenticationToken.getPrincipal();
-                            User user = userService.findOrCreateUser(oAuth2User);
-                            String token = authenticationService.generateToken(user);
+                            String token = userService.findOrCreateUserAndGenerateToken(oAuth2User);
                             res.setContentType("application/json");
                             res.getWriter().write("{\"token\":\"" + token + "\"}");
                         }))
