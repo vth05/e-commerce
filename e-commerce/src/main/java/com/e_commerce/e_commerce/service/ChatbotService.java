@@ -2,11 +2,13 @@ package com.e_commerce.e_commerce.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,9 @@ import java.util.stream.Collectors;
 public class ChatbotService {
     ChatClient chatClient;
     VectorStore vectorStore;
+    @NonFinal
+    @Value("${app.base-url}")
+    String baseUrl;
 
     public ChatbotService(ChatClient.Builder builder, VectorStore vectorStore) {
         this.chatClient = builder.build();
@@ -93,7 +98,7 @@ public class ChatbotService {
                 - Tình trạng:
                   - "còn hàng" nếu Quantity > 0
                   - "hết hàng" nếu Quantity = 0
-                - Xem chi tiết: http://localhost:8080/products/{productId}
+                - Xem chi tiết: %s/products/{productId}
                 
                 ================================================
                 QUY TẮC BẮT BUỘC
@@ -135,6 +140,6 @@ public class ChatbotService {
                 
                 YÊU CẦU CỦA KHÁCH HÀNG:
                 %s
-                """.formatted(context, message);
+                """.formatted(baseUrl, context, message);
     }
 }

@@ -69,6 +69,11 @@ sendgrid:
   api:
     key: ${SENDGRID_API_KEY}
 
+cloudinary:
+  name: ${CLOUDINARY_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
 open:
   api:
     title: "E-commerce API"
