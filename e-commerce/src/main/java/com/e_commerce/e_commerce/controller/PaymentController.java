@@ -77,6 +77,7 @@ public class PaymentController {
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
 
@@ -202,11 +203,11 @@ public class PaymentController {
                         }
                     } else {
                         rspCode = "04";
-                        message = "Invalid Amount";
+                        message = "Invalid amount";
                     }
                 } else {
                     rspCode = "01";
-                    message = "Order not Found";
+                    message = "Order Not Found";
                 }
             } else {
                 rspCode = "97";

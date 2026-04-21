@@ -54,8 +54,8 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse<Void>> handleException(Exception exception) {
-        log.info("in GlobalHandlerException - handleException");
-        log.info("Exception type: {}, message: {}", exception.getClass().getSimpleName(), exception.getMessage());
+        log.error("Exception: ", exception.toString());
+        log.error("Exception message: ", exception.getMessage());
         ErrorCode errorCode = ErrorCode.UNCATEGORIZED_EXCEPTION;
         return ResponseEntity.status(errorCode.getStatusCode()).body(ApiResponse.<Void>builder()
                 .code(errorCode.getCode())
