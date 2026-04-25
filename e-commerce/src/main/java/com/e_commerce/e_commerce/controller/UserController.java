@@ -1,17 +1,16 @@
 package com.e_commerce.e_commerce.controller;
 
-import com.e_commerce.e_commerce.dto.request.UserUpdateRequest;
+import com.e_commerce.e_commerce.dto.request.*;
 import com.e_commerce.e_commerce.service.UserService;
-import com.e_commerce.e_commerce.dto.request.UserCreationRequest;
 import com.e_commerce.e_commerce.dto.response.ApiResponse;
 import com.e_commerce.e_commerce.dto.response.UserResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -28,9 +27,14 @@ public class UserController {
     }
 
     @GetMapping
-    ApiResponse<List<UserResponse>> getUsers() {
-        return ApiResponse.<List<UserResponse>>builder()
-                .result(userService.getUsers())
+    ApiResponse<Page<UserResponse>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "username") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return ApiResponse.<Page<UserResponse>>builder()
+                .result(userService.getUsers(page, size, sortBy, sortDir))
                 .build();
     }
 
@@ -48,11 +52,46 @@ public class UserController {
                 .build();
     }
 
+    @PutMapping("/change-password")
+    ApiResponse<String> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        return ApiResponse.<String>builder()
+                .result(userService.changePassword(request))
+                .build();
+    }
+
+    @PostMapping("/email-change-request")
+    ApiResponse<String> requestChangeEmail(@RequestBody @Valid RequestChangeEmailOtpRequest request) {
+        return ApiResponse.<String>builder()
+                .result(userService.requestChangeEmail(request))
+                .build();
+    }
+
+    @PutMapping("/change-email")
+    ApiResponse<String> changeEmail(@RequestBody @Valid ChangeEmailRequest request) {
+        return ApiResponse.<String>builder()
+                .result(userService.changeEmail(request))
+                .build();
+    }
+
+    @PostMapping("/forgot-password")
+    ApiResponse<String> forgotPassword(@RequestParam @NotBlank String email) {
+        return ApiResponse.<String>builder()
+                .result(userService.forgotPassword(email))
+                .build();
+    }
+
+    @PutMapping("/reset-password")
+    ApiResponse<String> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+        return ApiResponse.<String>builder()
+                .result(userService.resetPassword(request))
+                .build();
+    }
+
     @DeleteMapping("/{userId}")
-    ApiResponse<Void> deleteUser(@PathVariable String userId) {
-        userService.deleteUser(userId);
-        return ApiResponse.<Void>builder()
+    ApiResponse<UserResponse> deactivateUser(@PathVariable String userId) {
+        return ApiResponse.<UserResponse>builder()
                 .message("User deleted successfully")
+                .result(userService.deactivateUser(userId))
                 .build();
     }
 }

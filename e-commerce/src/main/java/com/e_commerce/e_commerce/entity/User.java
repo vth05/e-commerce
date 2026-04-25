@@ -1,5 +1,6 @@
 package com.e_commerce.e_commerce.entity;
 
+import com.e_commerce.e_commerce.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -17,7 +18,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-    @Column(unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
+    @Column(unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci", nullable = false)
     String username;
     String firstName;
     String lastName;
@@ -25,9 +26,13 @@ public class User {
     String phoneNumber;
     String address;
     String email;
+    @Enumerated(EnumType.STRING)
+    Gender gender;
     LocalDate dob;
     @Builder.Default
     boolean active = true;
+    boolean emailVerified;
+    int tokenVersion;
     @ManyToMany
     Set<Role> roles;
 }

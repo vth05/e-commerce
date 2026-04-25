@@ -6,7 +6,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -18,24 +17,34 @@ public class UserUpdateRequest {
     String username;
     String firstName;
     String lastName;
-    @Size(min = 6, message = "PASSWORD_INVALID")
-    String password;
     String phoneNumber;
     String address;
-    @Email(message = "EMAIL_INVALID", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
-    String email;
+    String gender;
     LocalDate dob;
-    Set<String> roles;
+    Boolean active;
+    Boolean emailVerified;
 
     public void setUsername(String username) {
         this.username = username == null ? null : username.trim();
     }
 
-    public void setPassword(String password) {
-        this.password = password == null ? null : password.trim();
+    public void setFirstName(String firstName) {
+        this.firstName = firstName == null ? null : firstName.trim();
     }
 
-    public void setEmail(String email) {
-        this.email = email == null ? null : email.trim();
+    public void setLastName(String lastName) {
+        this.lastName = lastName == null ? null : lastName.trim();
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber == null ? null : phoneNumber.trim();
+    }
+
+    public void setAddress(String address) {
+        this.address = address == null ? null : address.trim();
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender == null ? null : gender.trim();
     }
 }

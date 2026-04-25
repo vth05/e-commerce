@@ -19,7 +19,10 @@ public class UserResponse {
     String phoneNumber;
     String address;
     String email;
+    String gender;
     LocalDate dob;
     boolean active;
+    boolean emailVerified;
+    int tokenVersion;
     Set<RoleResponse> roles;
 }

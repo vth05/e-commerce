@@ -17,7 +17,7 @@ public class LoginRequest {
     @Size(min = 4, message = "USERNAME_INVALID")
     String username;
     @NotBlank(message = "PASSWORD_REQUIRED")
-    @Size(min = 4, message = "PASSWORD_INVALID")
+    @Size(min = 6, message = "PASSWORD_INVALID")
     String password;
 
     public void setUsername(String username) {

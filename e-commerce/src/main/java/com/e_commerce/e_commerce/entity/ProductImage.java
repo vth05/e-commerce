@@ -1,11 +1,8 @@
 package com.e_commerce.e_commerce.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -13,8 +10,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class InvalidatedToken {
+public class ProductImage {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-    LocalDateTime expirationTime;
+
+    String imageUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "product_variant_id")
+    ProductVariant productVariant;
 }

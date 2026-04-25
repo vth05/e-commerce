@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -15,12 +18,23 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
+
     String name;
-    double price;
-    long quantity;
+
+    String brand;
+
+    String code;
+
     // save enum as string in database
     @Enumerated(EnumType.STRING)
     Category category;
+
     String description;
-    boolean active;
+
+    @Builder.Default
+    boolean active = true;
+
+    @OneToMany(mappedBy = "product")
+    @Builder.Default
+    List<ProductVariant> productVariants = new ArrayList<>();
 }

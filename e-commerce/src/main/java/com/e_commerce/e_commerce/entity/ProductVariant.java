@@ -1,0 +1,69 @@
+package com.e_commerce.e_commerce.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ProductVariant {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
+
+    String productVariantName;
+
+    BigDecimal price;
+
+    BigDecimal weight;
+
+    BigDecimal length;
+
+    BigDecimal width;
+
+    BigDecimal height;
+
+    long quantity;
+
+    String color;
+
+    String ram;
+
+    String storage;
+
+    String cpu;
+
+    String gpu;
+
+    BigDecimal screenSize;
+
+    String screenResolution;
+
+    Integer refreshRateHz;
+
+    @Column(unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci", nullable = false)
+    String sku;
+
+    @Builder.Default
+    boolean active = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    Product product;
+
+    @OneToMany(mappedBy = "productVariant")
+    @Builder.Default
+    List<CartItem> cartItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "productVariant")
+    @Builder.Default
+    List<ProductImage> productImages = new ArrayList<>();
+}
