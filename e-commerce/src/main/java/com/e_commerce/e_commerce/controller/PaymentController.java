@@ -126,6 +126,7 @@ public class PaymentController {
 
     @GetMapping("/ipn")
     public ApiResponse<?> getPaymentInfo(HttpServletRequest request) throws UnsupportedEncodingException {
+        log.info("VNPAY IPN URL: ", request);
         String rspCode = null;
         String message = null;
         try {
