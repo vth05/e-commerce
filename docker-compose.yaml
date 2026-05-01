@@ -16,7 +16,8 @@ services:
       timeout: 5s
       retries: 5
   app:
-    image: vinhth05/e-commerce:0.0.19
+    image: vinhth05/e-commerce:latest
+    pull_policy: always
     container_name: e-commerce
     ports:
       - "8080:8080"

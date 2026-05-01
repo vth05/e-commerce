@@ -15,14 +15,14 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-10-23T16:09:02+0700",
-    comments = "version: 1.6.3, compiler: javac, environment: Java 25 (Oracle Corporation)"
+    date = "2026-04-08T16:03:07+0700",
+    comments = "version: 1.6.3, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
 )
 @Component
 public class UserMapperImpl implements UserMapper {
 
     @Override
-    public User createUser(UserCreationRequest userCreationRequest) {
+    public User toUser(UserCreationRequest userCreationRequest) {
         if ( userCreationRequest == null ) {
             return null;
         }
@@ -55,8 +55,13 @@ public class UserMapperImpl implements UserMapper {
         userResponse.phoneNumber( user.getPhoneNumber() );
         userResponse.address( user.getAddress() );
         userResponse.email( user.getEmail() );
+        if ( user.getGender() != null ) {
+            userResponse.gender( user.getGender().name() );
+        }
         userResponse.dob( user.getDob() );
         userResponse.active( user.isActive() );
+        userResponse.emailVerified( user.isEmailVerified() );
+        userResponse.tokenVersion( user.getTokenVersion() );
         userResponse.roles( roleSetToRoleResponseSet( user.getRoles() ) );
 
         return userResponse.build();
@@ -82,9 +87,6 @@ public class UserMapperImpl implements UserMapper {
         }
         if ( userUpdateRequest.getAddress() != null ) {
             user.setAddress( userUpdateRequest.getAddress() );
-        }
-        if ( userUpdateRequest.getEmail() != null ) {
-            user.setEmail( userUpdateRequest.getEmail() );
         }
         if ( userUpdateRequest.getDob() != null ) {
             user.setDob( userUpdateRequest.getDob() );
