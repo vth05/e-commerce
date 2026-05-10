@@ -10,10 +10,12 @@ This is a comprehensive e-commerce application built using Java and Spring Boot.
 - Order processing
 - Payment integration
 - Dashboard for analytics
-- Email verification
+- Secure authentication with OTP and Email verification flow
 - Inventory management
 - Review and rating system
 - Chatbot integration
+- Real-time shipping fee calculation and order tracking via GHN API
+- Automatically suggests top-selling products based on real-time sales data
 
 ## Application Flow
 1. **User Registration and Login**:
@@ -45,9 +47,6 @@ This is a comprehensive e-commerce application built using Java and Spring Boot.
 - The application supports the following payment methods:
   - **VnPay**: Integrated for secure online transactions.
   - **Cash on Delivery (COD)**: Available for users who prefer offline payments.
-
-### Dashboard
-- Provides analytics for administrators, including sales data and user activity.
 
 ## Project Structure
 The project follows a standard Spring Boot structure:
