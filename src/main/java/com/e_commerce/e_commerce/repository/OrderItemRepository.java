@@ -33,7 +33,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
             join oi.order o
             where o.createdAt between :start and :end and o.checkoutStatus = :status
             group by oi.productName
-            order by sum(oi.priceAtPurchase * oi.quantity) desc
+            order by sum(oi.priceAtPurchase * oi.quantity - COALESCE(oi.discountAmount, 0)) desc
             """)
     Page<TopProductsByRevenueResponse> findTopProductsByRevenueAndDateRangeAndCheckoutStatus(@Param("status") CheckoutStatus status, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
 
@@ -65,7 +65,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, String> {
                 having stock_quantity > 0
             ) pv on oi.product_id = pv.product_id
             join orders o on oi.order_id = o.cart_id
-            where o.created_at between :start and :end and o.checkout_status in ('PAID', 'PENDING')
+            where o.created_at between :start and :end and o.checkout_status in ('PAID', 'SHIPPING', 'DELIVERED')
             group by oi.product_id, oi.product_name, pv.display_price, pv.stock_quantity
             order by quantitySold desc
             limit :limit
