@@ -87,11 +87,7 @@ public class OrderService {
 
     private void restoreProductVariantStock(Order order) {
         List<OrderItem> orderItemList = orderItemRepository.findAllByOrderId(order.getId());
-        Map<String, Long> productVariantIdToQuantityMap = orderItemList.stream()
-                .collect(Collectors.toMap(
-                        OrderItem::getProductVariantId,
-                        OrderItem::getQuantity
-                ));
+        Map<String, Long> productVariantIdToQuantityMap = orderItemList.stream().collect(Collectors.toMap(OrderItem::getProductVariantId, OrderItem::getQuantity));
         List<ProductVariant> productVariants = productVariantRepository.findAllByIdIn(productVariantIdToQuantityMap.keySet());
         for (ProductVariant productVariant : productVariants) {
             productVariant.setQuantity(productVariant.getQuantity() + productVariantIdToQuantityMap.get(productVariant.getId()));
@@ -111,14 +107,7 @@ public class OrderService {
     }
 
     private void validateStatusTransition(CheckoutStatus current, CheckoutStatus next) {
-        Map<CheckoutStatus, Set<CheckoutStatus>> allowedTransitions = Map.of(
-                CheckoutStatus.PENDING, Set.of(CheckoutStatus.PAID, CheckoutStatus.CANCELLED),
-                CheckoutStatus.PAID, Set.of(CheckoutStatus.SHIPPING),
-                CheckoutStatus.SHIPPING, Set.of(CheckoutStatus.DELIVERED, CheckoutStatus.DELIVERY_FAILED),
-                CheckoutStatus.DELIVERED, Set.of(),
-                CheckoutStatus.DELIVERY_FAILED, Set.of(),
-                CheckoutStatus.CANCELLED, Set.of()
-        );
+        Map<CheckoutStatus, Set<CheckoutStatus>> allowedTransitions = Map.of(CheckoutStatus.PENDING, Set.of(CheckoutStatus.PAID, CheckoutStatus.CANCELLED, CheckoutStatus.SHIPPING), CheckoutStatus.PAID, Set.of(CheckoutStatus.SHIPPING), CheckoutStatus.SHIPPING, Set.of(CheckoutStatus.DELIVERED, CheckoutStatus.DELIVERY_FAILED), CheckoutStatus.DELIVERED, Set.of(), CheckoutStatus.DELIVERY_FAILED, Set.of(), CheckoutStatus.CANCELLED, Set.of());
         Set<CheckoutStatus> allowed = allowedTransitions.getOrDefault(current, Set.of());
         if (!allowed.contains(next)) {
             throw new AppException(ErrorCode.INVALID_ORDER_STATUS_TRANSITION);
