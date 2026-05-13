@@ -17,10 +17,10 @@ public interface ProductRepository extends JpaRepository<Product, String>, Produ
     Page<Product> findAllByActiveTrue(Pageable pageable);
 
     @Query("""
-            select distinct p
+            select p
             from Product p
-            join fetch p.productVariants pv
-            where p.active = true and pv.active = true
+            left join fetch p.productVariants pv
+            where p.active = true and (pv.active = true or pv is null)
             """)
     List<Product> findAllWithVariantsForChatbot();
 }

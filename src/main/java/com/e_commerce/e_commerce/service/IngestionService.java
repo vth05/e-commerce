@@ -43,7 +43,12 @@ public class IngestionService implements CommandLineRunner {
         String variantsText = product.getProductVariants().stream().map(variant -> """
                 Variant name: %s
                 Price: %s
+                Weight: %s
+                Length: %s
+                Width: %s
+                Height: %s
                 Quantity: %s
+                Color: %s
                 Ram: %s
                 Storage: %s
                 Cpu: %s
@@ -54,7 +59,12 @@ public class IngestionService implements CommandLineRunner {
                 """.formatted(
                 variant.getProductVariantName(),
                 variant.getPrice(),
+                variant.getWeight(),
+                variant.getLength(),
+                variant.getWidth(),
+                variant.getHeight(),
                 variant.getQuantity(),
+                variant.getColor(),
                 variant.getRam(),
                 variant.getStorage(),
                 variant.getCpu(),
