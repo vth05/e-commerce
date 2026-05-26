@@ -21,8 +21,5 @@ public class VerificationToken {
     @Builder.Default
     boolean active = true;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "user_id")
-    User user;
+    String userId;
 }
