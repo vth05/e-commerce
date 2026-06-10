@@ -13,7 +13,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         jdbc:
@@ -43,7 +43,12 @@ spring:
         options:
           model: gemini-2.5-flash
 
-debug: true
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.transaction: TRACE
+    org.springframework.orm.jpa: TRACE
 
 mistral:
   api:

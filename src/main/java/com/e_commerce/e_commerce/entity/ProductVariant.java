@@ -66,8 +66,4 @@ public class ProductVariant {
     @OneToMany(mappedBy = "productVariant")
     @Builder.Default
     List<ProductImage> productImages = new ArrayList<>();
-
-    @Version
-    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
-    Long version;
 }

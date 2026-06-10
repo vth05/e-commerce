@@ -19,7 +19,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -45,6 +44,7 @@ public class CheckoutService {
     public OrderResponse checkout(CheckoutRequest request) {
         String userId = SecurityUtils.getUserIdFromAuthentication();
         Cart cart = cartRepository.findByUserIdAndCartStatus(userId, CartStatus.ACTIVE).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
+        cart.setCartStatus(CartStatus.CHECKED_OUT);
         Order order = Order.builder()
                 .cart(cart)
                 .userId(userId)
@@ -59,63 +59,54 @@ public class CheckoutService {
         if (cartItemIdsFromRequest.size() != cartItemsFromRequest.size()) {
             throw new AppException(ErrorCode.CART_ITEM_NOT_IN_CART);
         }
-        Map<String, String> cartItemToVoucherCodeMap = Optional.ofNullable(request.getCartItemIdToVoucherCodeMap()).orElse(Collections.emptyMap());
-        List<Voucher> selectedVouchers = voucherRepository.findAllByCodeIn(cartItemToVoucherCodeMap.values());
+        Map<String, String> cartItemIdToVoucherCodeMap = Optional.ofNullable(request.getCartItemIdToVoucherCodeMap()).orElse(Collections.emptyMap());
+        List<Voucher> selectedVouchers = voucherRepository.findAllByCodeInWithWriteLock(cartItemIdToVoucherCodeMap.values());
         Map<String, Voucher> voucherLookup = selectedVouchers.stream().collect(Collectors.toMap(voucher -> voucher.getCode(), voucher -> voucher));
-        List<ProductVariant> productVariants = new ArrayList<>();
-        try {
-            for (int i = 0; i < cartItemsFromRequest.size(); i++) {
-                CartItem cartItem = cartItemsFromRequest.get(i);
-                long cartItemQuantity = cartItem.getQuantity();
-                ProductVariant productVariant = cartItem.getProductVariant();
-                long productVariantQuantity = productVariant.getQuantity();
-                if (productVariantQuantity < cartItemQuantity) {
-                    throw new AppException(ErrorCode.PRODUCT_VARIANT_INSUFFICIENT_STOCK);
-                }
-                productVariant.setQuantity(productVariantQuantity - cartItemQuantity);
-                productVariants.add(productVariant);
-                BigDecimal currentPrice = productVariant.getPrice();
-                Product product = productVariant.getProduct();
-                OrderItem orderItem = OrderItem.builder()
-                        .productName(product.getName())
-                        .productId(product.getId())
-                        .productVariantId(productVariant.getId())
-                        .priceAtPurchase(currentPrice)
-                        .quantity(cartItemQuantity)
-                        .order(order)
-                        .build();
-                BigDecimal cartItemSubtotal = currentPrice.multiply(BigDecimal.valueOf(cartItemQuantity));
-                String voucherCode = cartItemToVoucherCodeMap.get(cartItem.getId());
-                if (voucherCode != null) {
-                    Voucher voucher = voucherLookup.get(voucherCode);
-                    // if this voucherCode doesn't exist in database
-                    if (voucher == null) {
-                        throw new AppException(ErrorCode.VOUCHER_CODE_NOT_EXISTED);
-                    } else {
-                        if (checkoutUtils.isVoucherApplicableToProduct(voucher, product)) {
-                            BigDecimal discount = checkoutUtils.calculateCartItemDiscount(voucher, cartItemSubtotal);
-                            totalDiscount = totalDiscount.add(discount);
-                            voucher.setUsageCount(voucher.getUsageCount() + 1);
-                            orderItem.setVoucherCode(voucherCode);
-                            orderItem.setDiscountAmount(discount);
-                        }
+        for (int i = 0; i < cartItemsFromRequest.size(); i++) {
+            CartItem cartItem = cartItemsFromRequest.get(i);
+            long cartItemQuantity = cartItem.getQuantity();
+            ProductVariant productVariant = cartItem.getProductVariant();
+            // atomic update
+            int rowsUpdated = productVariantRepository.decreaseStock(productVariant.getId(), cartItemQuantity);
+            if (rowsUpdated == 0) {
+                throw new AppException(ErrorCode.PRODUCT_VARIANT_INSUFFICIENT_STOCK);
+            }
+            BigDecimal currentPrice = productVariant.getPrice();
+            Product product = productVariant.getProduct();
+            OrderItem orderItem = OrderItem.builder()
+                    .productName(product.getName())
+                    .productId(product.getId())
+                    .productVariantId(productVariant.getId())
+                    .priceAtPurchase(currentPrice)
+                    .quantity(cartItemQuantity)
+                    .order(order)
+                    .build();
+            BigDecimal cartItemSubtotal = currentPrice.multiply(BigDecimal.valueOf(cartItemQuantity));
+            String voucherCode = cartItemIdToVoucherCodeMap.get(cartItem.getId());
+            if (voucherCode != null) {
+                Voucher voucher = voucherLookup.get(voucherCode);
+                // if this voucherCode doesn't exist in database
+                if (voucher == null) {
+                    throw new AppException(ErrorCode.VOUCHER_CODE_NOT_EXISTED);
+                } else {
+                    if (checkoutUtils.isVoucherApplicableToProduct(voucher, product)) {
+                        BigDecimal discount = checkoutUtils.calculateCartItemDiscount(voucher, cartItemSubtotal);
+                        totalDiscount = totalDiscount.add(discount);
+                        voucher.setUsageCount(voucher.getUsageCount() + 1);
+                        orderItem.setVoucherCode(voucherCode);
+                        orderItem.setDiscountAmount(discount);
                     }
                 }
-                subtotal = subtotal.add(cartItemSubtotal);
-                orderItemRepository.save(orderItem);
-                // for response
-                order.getOrderItems().add(orderItem);
             }
-            productVariantRepository.saveAllAndFlush(productVariants);
-        } catch (ObjectOptimisticLockingFailureException e) {
-            throw new RuntimeException("ObjectOptimisticLockingFailureException (checkout method)");
+            subtotal = subtotal.add(cartItemSubtotal);
+            orderItemRepository.save(orderItem);
+            // for response
+            order.getOrderItems().add(orderItem);
         }
         ShippingFeeCalculationResult shippingFeeCalculationResult = checkoutUtils.calculateShippingFeeAndDimensions(subtotal, request.getService_id(), request.getTo_ward_code(), request.getTo_district_id(), cartItemsFromRequest);
         BigDecimal originalShippingFee = shippingFeeCalculationResult.originalShippingFee();
-        String shippingVoucherCode = request.getShippingVoucherCode();
-        BigDecimal shippingDiscount = checkoutUtils.calculateShippingDiscount(subtotal, originalShippingFee, shippingVoucherCode);
+        BigDecimal shippingDiscount = checkoutUtils.calculateShippingDiscount(subtotal, originalShippingFee, request.getShippingVoucherCode());
         BigDecimal shippingFee = originalShippingFee.subtract(shippingDiscount);
-        cart.setCartStatus(CartStatus.CHECKED_OUT);
         order.setReceiverName(request.getReceiverName());
         order.setReceiverPhone(request.getReceiverPhone());
         order.setShippingAddress(request.getShippingAddress());

@@ -68,7 +68,7 @@ public class CartService {
                     .productVariant(productVariant)
                     .quantity(0)
                     .build();
-            return cartItemRepository.save(newCartItem);
+            return newCartItem;
         });
         if (productVariant.getQuantity() < quantityFromRequest + cartItem.getQuantity()) {
             throw new AppException(ErrorCode.PRODUCT_VARIANT_INSUFFICIENT_STOCK);
@@ -77,6 +77,7 @@ public class CartService {
         // update quantity of cartItem
         cartItem.setQuantity(cartItem.getQuantity() + quantityFromRequest);
         cartItem.setPriceAtPurchase(productVariant.getPrice());
+        cartItemRepository.save(cartItem);
 
         // update updatedAt field (@LastModifiedDate doesn't work, I don't know, so I do it manually)
         cart.setUpdatedAt(LocalDateTime.now());

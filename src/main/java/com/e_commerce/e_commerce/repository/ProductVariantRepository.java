@@ -5,6 +5,7 @@ import com.e_commerce.e_commerce.entity.ProductVariant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -24,6 +25,14 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     long countByIdIn(Set<String> ids);
 
     List<ProductVariant> findAllByIdIn(Set<String> productVariantIds);
+
+    @Modifying
+    @Query("""
+            update ProductVariant pv
+            set pv.quantity = pv.quantity - :quantity
+            where pv.id = :variantId and pv.quantity >= :quantity
+            """)
+    int decreaseStock(@Param("variantId") String variantId, @Param("quantity") long quantity);
 
     @Query("""
             select new com.e_commerce.e_commerce.dto.response.ProductVariantLowStockResponse(p.id, p.name, pv.id, pv.quantity)
